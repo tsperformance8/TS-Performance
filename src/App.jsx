@@ -232,15 +232,17 @@ function Messaging({myEmail,otherEmail,myId}){
   async function send(){
     if(!draft.trim()||!otherEmail) return;
     setSending(true);
-    await supabase.from("messages").insert({
+    const newMsg={
       sender_id: myId,
       sender_email: myEmail,
       receiver_email: otherEmail,
       message: draft.trim(),
       created_at: new Date().toISOString(),
       read: false
-    });
+    };
+    setMessages(prev=>[...prev, newMsg]);
     setDraft("");
+    await supabase.from("messages").insert(newMsg);
     setSending(false);
   }
 
