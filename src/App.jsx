@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "./supabase";
 import { useAuth, signUp, signIn, signOut, MANAGER_EMAIL } from "./Auth";
 
 /* ─── BRAND ─────────────────────────────────────────────────────────────── */
 const B = {
-  green:"#3A7D44",greenLt:"#4CAF5A",greenDim:"rgba(58,125,68,0.12)",greenGlow:"rgba(58,125,68,0.25)",
+  green:"#3A7D44",greenLt:"#4CAF5A",greenDim:"rgba(58,125,68,0.12)",
   dark:"#1C1C1C",darker:"#141414",card:"#242424",border:"#333333",borderLt:"#444444",
   grey:"#888888",greyLt:"#BBBBBB",white:"#F5F5F5",text:"#EEEEEE",alert:"#E05050",amber:"#D4A020",blue:"#4A90D9",
 };
@@ -87,16 +87,28 @@ select.inp option{background:${B.dark}}
 .banner-title{font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:700;color:${B.white};text-transform:uppercase;margin-bottom:0.25rem;letter-spacing:0.02em}
 .banner-sub{font-size:0.85rem;color:${B.grey}}
 .scroll{overflow-y:auto}.mh300{max-height:300px}.mh400{max-height:400px}
-.chat-wrap{display:flex;flex-direction:column;gap:0.75rem;max-height:280px;overflow-y:auto;padding:0.5rem 0}
-.msg{max-width:80%;padding:0.6rem 1rem;border-radius:8px;font-size:0.84rem;line-height:1.5}
-.msg-me{background:${B.green};color:white;align-self:flex-end;border-bottom-right-radius:3px}
-.msg-them{background:${B.border};color:${B.text};align-self:flex-start;border-bottom-left-radius:3px}
-.msg-ts{font-size:0.65rem;color:${B.grey};margin-top:0.2rem}
+
+/* MESSAGING */
+.msg-wrap{display:flex;flex-direction:column;gap:0.75rem;height:380px;overflow-y:auto;padding:0.75rem;background:${B.darker};border:1px solid ${B.border};border-radius:8px;margin-bottom:0.75rem}
+.msg-row{display:flex;flex-direction:column}
+.msg-row.mine{align-items:flex-end}
+.msg-row.theirs{align-items:flex-start}
+.msg-bubble{max-width:75%;padding:0.65rem 1rem;border-radius:10px;font-size:0.85rem;line-height:1.5;word-break:break-word}
+.msg-bubble.mine{background:${B.green};color:white;border-bottom-right-radius:3px}
+.msg-bubble.theirs{background:${B.border};color:${B.text};border-bottom-left-radius:3px}
+.msg-time{font-size:0.65rem;color:${B.grey};margin-top:0.25rem;padding:0 0.25rem}
+.msg-input-row{display:flex;gap:0.6rem}
+.msg-empty{display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:0.5rem;color:${B.grey}}
+.unread-dot{width:8px;height:8px;border-radius:50%;background:${B.green};flex-shrink:0}
+
+/* CHAT LIST */
+.chat-client-row{display:flex;align-items:center;gap:0.75rem;padding:0.75rem;border-radius:8px;cursor:pointer;border:1px solid transparent;transition:all 0.15s}
+.chat-client-row:hover{background:rgba(58,125,68,0.12)}
+.chat-client-row.sel{background:rgba(58,125,68,0.12);border-color:${B.border}}
+
 .supp-row{display:flex;align-items:center;gap:0.85rem;padding:0.7rem 0;border-bottom:1px solid ${B.border}}
 .supp-row:last-child{border:none}
 .supp-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.supp-check{width:22px;height:22px;border-radius:5px;border:2px solid ${B.border};cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;margin-left:auto;flex-shrink:0}
-.supp-check.done{background:${B.green};border-color:${B.green}}
 .wcup{width:26px;height:32px;border-radius:3px 3px 6px 6px;border:2px solid ${B.borderLt};cursor:pointer;transition:all 0.2s}
 .wcup.full{background:${B.green};border-color:${B.greenLt}}
 .wcup:hover{transform:translateY(-2px)}
@@ -140,16 +152,9 @@ select.inp option{background:${B.dark}}
 .cal-label{font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:${B.greyLt}}
 .cal-val{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;color:${B.white}}
 .macro-bar{margin-bottom:0.5rem}
-.sched-grid{display:grid;grid-template-columns:100px repeat(7,1fr);gap:2px;font-size:0.75rem}
-.sched-head{background:${B.green};color:white;padding:0.5rem 0.3rem;text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border-radius:4px}
-.sched-row-label{background:${B.border};color:${B.greyLt};padding:0.5rem 0.6rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border-radius:4px;display:flex;align-items:center}
-.sched-cell{background:${B.darker};border:1px solid ${B.border};border-radius:4px;padding:0.4rem;min-height:52px;font-size:0.72rem;color:${B.greyLt};line-height:1.4}
-.sched-cell.green{background:rgba(58,125,68,0.15);border-color:${B.green};color:${B.greenLt}}
-.sched-cell.amber{background:rgba(212,160,32,0.1);border-color:${B.amber};color:${B.amber}}
-.sched-cell.blue{background:rgba(74,144,217,0.1);border-color:${B.blue};color:${B.blue}}
 `;
 
-/* ─── DEMO DATA ──────────────────────────────────────────────────────────── */
+/* ─── MEAL PLAN DATA ─────────────────────────────────────────────────────── */
 const MEAL_PLAN = {
   Mon:[{t:"Breakfast",m:"Scrambled eggs, avocado & tomato + kiwi",c:450,p:20},{t:"Mid-morning",m:"Greek yoghurt bowl with whey & walnuts",c:450,p:30},{t:"Lunch",m:"Chicken salad bowl with sweet potato",c:480,p:40},{t:"Snack",m:"Whey shake + trail mix + apple",c:400,p:35},{t:"Dinner",m:"Sirloin steak, sweet potato fries & broccoli",c:650,p:45}],
   Tue:[{t:"Breakfast",m:"Scrambled eggs, avocado & tomato",c:450,p:20},{t:"Mid-morning",m:"Greek yoghurt bowl",c:450,p:30},{t:"Lunch",m:"Salmon & avocado salad",c:530,p:38},{t:"Snack",m:"Whey shake + trail mix",c:400,p:35},{t:"Dinner",m:"Butterflied chicken, wild rice & fajita veg",c:550,p:45}],
@@ -161,9 +166,8 @@ const MEAL_PLAN = {
 };
 
 const DEMO_CLIENTS = [
-  {id:1,name:"Sarah Mitchell",ini:"SM",col:"#4A90D9",goal:"Weight Management",status:"on-track",weight:68,targetWeight:63,cals:1650,targetCals:1800,protein:110,water:6,wgoal:8,comp:87,conditions:["IBS"],tags:["Dairy-free","High protein"],assessed:true},
-  {id:2,name:"James O'Brien",ini:"JO",col:"#D4A020",goal:"Recovery Support",status:"needs-attention",weight:84,targetWeight:80,cals:1920,targetCals:2200,protein:120,water:3,wgoal:10,comp:62,conditions:["Addiction Recovery"],tags:["No caffeine"],assessed:true},
-  {id:3,name:"New Client",ini:"NC",col:"#888",goal:"Awaiting Assessment",status:"new",weight:null,targetWeight:null,cals:0,targetCals:0,protein:0,water:0,wgoal:8,comp:0,conditions:[],tags:[],assessed:false},
+  {id:"d1",name:"Sarah Mitchell",ini:"SM",col:"#4A90D9",goal:"Weight Management",status:"on-track",weight:68,targetWeight:63,protein:110,conditions:["IBS"],tags:["Dairy-free","High protein"],assessed:true,email:"sarah@demo.com"},
+  {id:"d2",name:"James O'Brien",ini:"JO",col:"#D4A020",goal:"Recovery Support",status:"needs-attention",weight:84,targetWeight:80,protein:120,conditions:["Addiction Recovery"],tags:["No caffeine"],assessed:true,email:"james@demo.com"},
 ];
 
 /* ─── HELPERS ────────────────────────────────────────────────────────────── */
@@ -185,6 +189,87 @@ function Badge({status}){
   if(status==="needs-attention") return <span className="badge badge-amber">● Attention</span>;
   if(status==="new") return <span className="badge badge-blue">● New</span>;
   return <span className="badge badge-red">● Off Track</span>;
+}
+function fmtTime(ts){
+  if(!ts) return "";
+  const d=new Date(ts);
+  return d.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})+" · "+d.toLocaleDateString([],{weekday:"short",day:"numeric",month:"short"});
+}
+
+/* ─── REAL MESSAGING COMPONENT ───────────────────────────────────────────── */
+function Messaging({myEmail,otherEmail,myId}){
+  const [messages,setMessages]=useState([]);
+  const [draft,setDraft]=useState("");
+  const [sending,setSending]=useState(false);
+  const bottomRef=useRef(null);
+
+  useEffect(()=>{
+    if(!otherEmail) return;
+    loadMessages();
+    // Subscribe to real-time new messages
+    const channel=supabase.channel("messages_"+otherEmail)
+      .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},payload=>{
+        const m=payload.new;
+        if((m.sender_email===myEmail&&m.receiver_email===otherEmail)||(m.sender_email===otherEmail&&m.receiver_email===myEmail)){
+          setMessages(prev=>[...prev,m]);
+        }
+      }).subscribe();
+    return ()=>supabase.removeChannel(channel);
+  },[otherEmail]);
+
+  useEffect(()=>{
+    bottomRef.current?.scrollIntoView({behavior:"smooth"});
+  },[messages]);
+
+  async function loadMessages(){
+    const {data}=await supabase.from("messages")
+      .select("*")
+      .or(`and(sender_email.eq.${myEmail},receiver_email.eq.${otherEmail}),and(sender_email.eq.${otherEmail},receiver_email.eq.${myEmail})`)
+      .order("created_at",{ascending:true});
+    if(data) setMessages(data);
+  }
+
+  async function send(){
+    if(!draft.trim()||!otherEmail) return;
+    setSending(true);
+    await supabase.from("messages").insert({
+      sender_id: myId,
+      sender_email: myEmail,
+      receiver_email: otherEmail,
+      message: draft.trim(),
+      created_at: new Date().toISOString(),
+      read: false
+    });
+    setDraft("");
+    setSending(false);
+  }
+
+  if(!otherEmail) return <div style={{color:B.grey,fontSize:"0.85rem",padding:"1rem"}}>Select a client to start messaging.</div>;
+
+  return <div>
+    <div className="msg-wrap">
+      {messages.length===0
+        ? <div className="msg-empty"><div style={{fontSize:"1.5rem"}}>💬</div><div style={{fontSize:"0.85rem"}}>No messages yet. Say hello!</div></div>
+        : messages.map((m,i)=>{
+          const mine=m.sender_email===myEmail;
+          return <div key={i} className={`msg-row ${mine?"mine":"theirs"}`}>
+            <div className={`msg-bubble ${mine?"mine":"theirs"}`}>{m.message}</div>
+            <div className="msg-time">{fmtTime(m.created_at)}</div>
+          </div>;
+        })
+      }
+      <div ref={bottomRef}/>
+    </div>
+    <div className="msg-input-row">
+      <input className="inp" style={{flex:1}} placeholder="Type a message…" value={draft}
+        onChange={e=>setDraft(e.target.value)}
+        onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&send()}/>
+      <button className="btn btn-g btn-sm" onClick={send} disabled={sending||!draft.trim()}>
+        {sending?"…":"Send →"}
+      </button>
+    </div>
+    <div style={{fontSize:"0.7rem",color:B.grey,marginTop:"0.4rem"}}>Press Enter to send</div>
+  </div>;
 }
 
 /* ─── LOGIN PAGE ─────────────────────────────────────────────────────────── */
@@ -214,7 +299,7 @@ function LoginPage(){
     <div className="auth-box">
       <div style={{display:"flex",justifyContent:"center",marginBottom:"2rem"}}><TSLogo/></div>
       <div className="auth-title">{isSignup?"Create Your Account":"Welcome Back"}</div>
-      <div className="auth-sub">{isSignup?"Sign up to access your personalised nutrition plan from Tom Saunders":"Sign in to your Tom Saunders Nutrition account"}</div>
+      <div className="auth-sub">{isSignup?"Sign up to access your personalised nutrition plan":"Sign in to your Tom Saunders Nutrition account"}</div>
       {error&&<div className="err">{error}</div>}
       {success&&<div className="success">{success}</div>}
       {isSignup&&<div className="inp-group"><label className="inp-label">Full Name</label><input className="inp" value={name} onChange={e=>setName(e.target.value)} placeholder="Your full name"/></div>}
@@ -240,14 +325,9 @@ function Assessment({user,onComplete}){
 
   async function submit(){
     setSaving(true);
-    try {
-      await supabase.from("assessments").upsert({
-        user_id: user.id,
-        email: user.email,
-        data: data,
-        completed_at: new Date().toISOString()
-      });
-    } catch(e){ console.log("Save error:",e); }
+    try{
+      await supabase.from("assessments").upsert({user_id:user.id,email:user.email,data:data,completed_at:new Date().toISOString()});
+    }catch(e){console.log("Save error:",e);}
     setSaving(false);
     onComplete(data);
   }
@@ -286,10 +366,8 @@ function Assessment({user,onComplete}){
           ))}
         </div>
       </div>
-      <div className="inp-group"><label className="inp-label">Work Schedule & how it affects training</label>
-        <textarea className="inp" rows={3} value={data.workSchedule} onChange={e=>set("workSchedule",e.target.value)} placeholder="e.g. I work 9-5 Mon-Fri, can train before work or at lunch..."/>
-      </div>
-      <div className="inp-group"><label className="inp-label">Time available for meal prep per week</label>
+      <div className="inp-group"><label className="inp-label">Work Schedule</label><textarea className="inp" rows={3} value={data.workSchedule} onChange={e=>set("workSchedule",e.target.value)} placeholder="e.g. I work 9-5 Mon-Fri, can train before work..."/></div>
+      <div className="inp-group"><label className="inp-label">Time for meal prep per week</label>
         <select className="inp" value={data.mealPrepTime} onChange={e=>set("mealPrepTime",e.target.value)}>
           <option value="">Select...</option>
           <option>Less than 30 minutes</option><option>30-60 minutes</option><option>1-2 hours</option><option>2-3 hours</option><option>3+ hours</option>
@@ -317,10 +395,8 @@ function Assessment({user,onComplete}){
     <div key={3}>
       <div className="assess-title">Dietary Preferences</div>
       <div className="assess-sub">This helps us build a plan that works for your lifestyle.</div>
-      <div className="inp-group"><label className="inp-label">Food allergies or intolerances</label>
-        <input className="inp" value={data.intolerances} onChange={e=>set("intolerances",e.target.value)} placeholder="e.g. Lactose intolerant, nut allergy... or None"/>
-      </div>
-      <div className="inp-group"><label className="inp-label">Dietary preferences (select all that apply)</label>
+      <div className="inp-group"><label className="inp-label">Food allergies or intolerances</label><input className="inp" value={data.intolerances} onChange={e=>set("intolerances",e.target.value)} placeholder="e.g. Lactose intolerant, nut allergy... or None"/></div>
+      <div className="inp-group"><label className="inp-label">Dietary preferences</label>
         <div className="checkbox-group">
           {["None","Vegetarian","Vegan","Gluten-free","Dairy-free","Low FODMAP","Halal","Kosher"].map(o=>(
             <div key={o} className={`checkbox-item ${data.dietPrefs.includes(o)?"checked":""}`} onClick={()=>toggle("dietPrefs",o)}>
@@ -333,16 +409,12 @@ function Assessment({user,onComplete}){
     <div key={4}>
       <div className="assess-title">Health & Medications</div>
       <div className="assess-sub">All information is strictly confidential.</div>
-      <div className="inp-group"><label className="inp-label">Current health conditions</label>
-        <textarea className="inp" rows={3} value={data.conditions} onChange={e=>set("conditions",e.target.value)} placeholder="e.g. Type 2 diabetes, IBS, hypothyroidism... or None"/>
-      </div>
-      <div className="inp-group"><label className="inp-label">Current medications or supplements</label>
-        <textarea className="inp" rows={3} value={data.medications} onChange={e=>set("medications",e.target.value)} placeholder="e.g. Metformin 500mg, Vitamin D3... or None"/>
-      </div>
+      <div className="inp-group"><label className="inp-label">Current health conditions</label><textarea className="inp" rows={3} value={data.conditions} onChange={e=>set("conditions",e.target.value)} placeholder="e.g. Type 2 diabetes, IBS... or None"/></div>
+      <div className="inp-group"><label className="inp-label">Current medications or supplements</label><textarea className="inp" rows={3} value={data.medications} onChange={e=>set("medications",e.target.value)} placeholder="e.g. Metformin 500mg, Vitamin D3... or None"/></div>
     </div>,
     <div key={5}>
       <div className="assess-title">Recovery Methods</div>
-      <div className="assess-sub">What recovery tools or practices do you currently use?</div>
+      <div className="assess-sub">What recovery tools do you currently use?</div>
       <div className="checkbox-group">
         {["Red light therapy","Hyperbaric oxygen","Cold water immersion","Hot sauna","Foam rolling","Stretching/yoga","Breathwork","Massage","None currently"].map(o=>(
           <div key={o} className={`checkbox-item ${data.recoveryMethods.includes(o)?"checked":""}`} onClick={()=>toggle("recoveryMethods",o)}>
@@ -372,13 +444,9 @@ function Assessment({user,onComplete}){
     <div className="banner" style={{marginBottom:"1.5rem"}}>
       <div className="banner-label">Tom Saunders Nutrition</div>
       <div className="banner-title">Client Assessment</div>
-      <div className="banner-sub">Complete all sections so Tom can build your personalised plan. Takes about 5 minutes.</div>
+      <div className="banner-sub">Complete all sections so Tom can build your personalised plan.</div>
     </div>
-    <div className="progress-steps">
-      {Array.from({length:total}).map((_,i)=>(
-        <div key={i} className={`step-dot ${i<step?"done":i===step?"active":""}`}/>
-      ))}
-    </div>
+    <div className="progress-steps">{Array.from({length:total}).map((_,i)=><div key={i} className={`step-dot ${i<step?"done":i===step?"active":""}`}/>)}</div>
     <div className="assess-step">
       {steps[step]}
       <div className="div"/>
@@ -386,10 +454,7 @@ function Assessment({user,onComplete}){
         <div style={{fontSize:"0.78rem",color:B.grey}}>Step {step+1} of {total}</div>
         <div className="fg">
           {step>0&&<button className="btn btn-o btn-sm" onClick={()=>setStep(s=>s-1)}>← Back</button>}
-          {step<total-1
-            ?<button className="btn btn-g btn-sm" onClick={()=>setStep(s=>s+1)}>Continue →</button>
-            :<button className="btn btn-g" onClick={submit} disabled={saving}>{saving?"Saving…":"Submit Assessment ✓"}</button>
-          }
+          {step<total-1?<button className="btn btn-g btn-sm" onClick={()=>setStep(s=>s+1)}>Continue →</button>:<button className="btn btn-g" onClick={submit} disabled={saving}>{saving?"Saving…":"Submit Assessment ✓"}</button>}
         </div>
       </div>
     </div>
@@ -400,11 +465,11 @@ function Assessment({user,onComplete}){
 function AIMealGen({client}){
   const [loading,setLoading]=useState(false);
   const [result,setResult]=useState("");
-  const [prompt,setPrompt]=useState(`Create a 3-day meal plan for ${client.name||"this client"}. Goal: ${client.goal||"general health"}. Calorie target: ${client.targetCals||2000}kcal. Protein target: ${client.protein||120}g. Conditions: ${client.conditions?.join(", ")||"None"}. Dietary needs: ${client.tags?.join(", ")||"None"}. Format clearly with Day 1/2/3, meals with approximate calories and protein per meal.`);
+  const [prompt,setPrompt]=useState(`Create a 3-day meal plan for ${client.name||"this client"}. Goal: ${client.goal||"general health"}. Conditions: ${client.conditions?.join(", ")||"None"}. Dietary needs: ${client.tags?.join(", ")||"None"}.`);
   async function generate(){
     setLoading(true);setResult("");
     try{
-      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:"You are Tom Saunders, a professional nutritionist. Create practical, science-led meal plans. Be specific with portions, include calories and protein per meal.",messages:[{role:"user",content:prompt}]})});
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:"You are Tom Saunders, a professional nutritionist. Create practical, science-led meal plans with specific portions, calories and protein per meal.",messages:[{role:"user",content:prompt}]})});
       const data=await res.json();
       const text=data.content?.find(b=>b.type==="text")?.text||"No response.";
       let i=0;const iv=setInterval(()=>{i=Math.min(i+10,text.length);setResult(text.slice(0,i));if(i>=text.length){clearInterval(iv);setLoading(false);}},20);
@@ -412,7 +477,7 @@ function AIMealGen({client}){
   }
   return <div>
     <div className="card-hd">AI Meal Plan Generator</div>
-    <textarea className="inp" rows={5} value={prompt} onChange={e=>setPrompt(e.target.value)} style={{marginBottom:"0.75rem"}}/>
+    <textarea className="inp" rows={4} value={prompt} onChange={e=>setPrompt(e.target.value)} style={{marginBottom:"0.75rem"}}/>
     <div className="fg" style={{marginBottom:"0.75rem"}}>
       <button className="btn btn-g btn-sm" onClick={generate} disabled={loading}>{loading?"Generating…":"✦ Generate Plan"}</button>
       {result&&<button className="btn btn-o btn-sm" onClick={()=>setResult("")}>Clear</button>}
@@ -424,7 +489,7 @@ function AIMealGen({client}){
 
 /* ─── CLIENT DASHBOARD ───────────────────────────────────────────────────── */
 function ClientDash({user,assessmentData}){
-  const [water,setWater]=useState(6);
+  const [water,setWater]=useState(0);
   const [day,setDay]=useState("Mon");
   const days=Object.keys(MEAL_PLAN);
   const meals=MEAL_PLAN[day]||[];
@@ -442,7 +507,7 @@ function ClientDash({user,assessmentData}){
     <div className="g4" style={{marginBottom:"1.1rem"}}>
       <div className="stat"><div className="stat-lbl">Calories Today</div><div className="stat-val">{totalCals}<span className="stat-unit">kcal</span></div></div>
       <div className="stat"><div className="stat-lbl">Protein Today</div><div className="stat-val">{totalProt}<span className="stat-unit">g</span></div></div>
-      <div className="stat"><div className="stat-lbl">Hydration</div><div className="stat-val">{water}<span className="stat-unit">/8 cups</span></div></div>
+      <div className="stat"><div className="stat-lbl">Hydration</div><div className="stat-val">{water}<span className="stat-unit">/8</span></div></div>
       <div className="stat"><div className="stat-lbl">Plan Status</div><div className="stat-val" style={{fontSize:"1.2rem",color:B.green}}>Active</div></div>
     </div>
     <div className="g2" style={{marginBottom:"1.1rem"}}>
@@ -451,7 +516,6 @@ function ClientDash({user,assessmentData}){
         <div className="cal-row"><div><div className="cal-label">Sedentary Day</div><div style={{fontSize:"0.72rem",color:B.grey}}>No exercise</div></div><div className="cal-val">1,900 <span style={{fontSize:"0.75rem",color:B.grey}}>kcal</span></div></div>
         <div className="cal-row active"><div><div className="cal-label">Active Day</div><div style={{fontSize:"0.72rem",color:B.grey}}>1 session</div></div><div className="cal-val">2,500 <span style={{fontSize:"0.75rem",color:B.grey}}>kcal</span></div></div>
         <div className="cal-row"><div><div className="cal-label">Very Active</div><div style={{fontSize:"0.72rem",color:B.grey}}>2+ sessions</div></div><div className="cal-val">2,800 <span style={{fontSize:"0.75rem",color:B.grey}}>kcal</span></div></div>
-        <div style={{fontSize:"0.78rem",color:B.grey,marginTop:"0.75rem"}}>Protein target: <strong style={{color:B.white}}>128g daily</strong> · Fluid: <strong style={{color:B.white}}>2.8L+</strong></div>
       </div>
       <div className="card">
         <div className="card-hd">💧 Hydration</div>
@@ -460,8 +524,6 @@ function ClientDash({user,assessmentData}){
             <div key={i} className={`wcup ${i<water?"full":""}`} onClick={()=>setWater(i<water?i:i+1)}/>
           ))}
         </div>
-        <div style={{fontSize:"0.72rem",color:B.grey}}>Tap to log each cup</div>
-        <div className="div"/>
         <Prog label="Protein" val={totalProt} max={128} col="p-green" unit="g"/>
         <Prog label="Calories" val={totalCals} max={2500} col="p-green" unit=" kcal"/>
       </div>
@@ -469,73 +531,63 @@ function ClientDash({user,assessmentData}){
     <div className="card" style={{marginBottom:"1.1rem"}}>
       <div className="card-hd">This Week's Meal Plan</div>
       <div className="fg" style={{marginBottom:"1rem",flexWrap:"wrap"}}>
-        {days.map(d=>(
-          <button key={d} onClick={()=>setDay(d)}
-            style={{padding:"0.35rem 0.85rem",borderRadius:"6px",border:"none",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:"0.72rem",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",background:day===d?B.green:B.border,color:day===d?"white":B.grey,transition:"all 0.2s"}}>
-            {d}
-          </button>
-        ))}
+        {days.map(d=><button key={d} onClick={()=>setDay(d)} style={{padding:"0.35rem 0.85rem",borderRadius:"6px",border:"none",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:"0.72rem",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",background:day===d?B.green:B.border,color:day===d?"white":B.grey,transition:"all 0.2s"}}>{d}</button>)}
       </div>
       <table className="mp-table">
         <thead><tr><th>Meal</th><th>Food</th><th>Calories</th><th>Protein</th></tr></thead>
         <tbody>
           {meals.map((m,i)=><tr key={i}><td style={{color:B.green,fontWeight:600}}>{m.t}</td><td>{m.m}</td><td>{m.c} kcal</td><td>{m.p}g</td></tr>)}
-          <tr style={{borderTop:`2px solid ${B.green}`}}>
-            <td colSpan={2} style={{fontWeight:600,color:B.greyLt}}>Total</td>
-            <td style={{color:B.green,fontWeight:700}}>{totalCals} kcal</td>
-            <td style={{color:B.green,fontWeight:700}}>{totalProt}g</td>
-          </tr>
+          <tr style={{borderTop:`2px solid ${B.green}`}}><td colSpan={2} style={{fontWeight:600,color:B.greyLt}}>Total</td><td style={{color:B.green,fontWeight:700}}>{totalCals} kcal</td><td style={{color:B.green,fontWeight:700}}>{totalProt}g</td></tr>
         </tbody>
       </table>
     </div>
     <div className="card">
-      <div className="card-hd">Messages from Tom</div>
-      <div style={{padding:"1.5rem",textAlign:"center",color:B.grey,fontSize:"0.85rem"}}>
-        <div style={{fontSize:"1.5rem",marginBottom:"0.5rem"}}>💬</div>
-        Your messages with Tom will appear here once your plan is set up.
-      </div>
+      <div className="card-hd">💬 Messages from Tom</div>
+      <Messaging myEmail={user.email} otherEmail={MANAGER_EMAIL} myId={user.id}/>
     </div>
   </div>;
 }
 
 /* ─── MANAGER DASHBOARD ──────────────────────────────────────────────────── */
-function ManagerDash(){
-  const [sel,setSel]=useState(DEMO_CLIENTS[0]);
+function ManagerDash({managerUser}){
+  const [sel,setSel]=useState(null);
   const [tab,setTab]=useState("assessment");
   const [dbClients,setDbClients]=useState([]);
 
   useEffect(()=>{
-    async function loadAssessments(){
-      const {data}=await supabase.from("assessments").select("*").order("completed_at",{ascending:false});
-      if(data&&data.length>0) setDbClients(data);
-    }
-    loadAssessments();
+    loadClients();
   },[]);
 
-  const allClients=[...dbClients.map((a,i)=>({
-    id:"db_"+i,name:`${a.data?.firstName||""} ${a.data?.lastName||""}`.trim()||a.email,
-    ini:(a.data?.firstName?.[0]||"?")+""+(a.data?.lastName?.[0]||""),
+  async function loadClients(){
+    const {data}=await supabase.from("assessments").select("*").order("completed_at",{ascending:false});
+    if(data) setDbClients(data);
+  }
+
+  const realClients=dbClients.map((a,i)=>({
+    id:"db_"+i,
+    name:`${a.data?.firstName||""} ${a.data?.lastName||""}`.trim()||a.email,
+    ini:((a.data?.firstName?.[0]||a.email?.[0]||"?").toUpperCase())+((a.data?.lastName?.[0]||"").toUpperCase()),
     col:"#3A7D44",goal:a.data?.goal||"Assessment Complete",
     status:"new",assessed:true,assessmentData:a.data,email:a.email,
     weight:a.data?.weight,conditions:[a.data?.conditions||"None"],tags:a.data?.dietPrefs||[]
-  })),...DEMO_CLIENTS];
+  }));
+
+  const allClients=[...realClients,...DEMO_CLIENTS];
+  const currentSel=sel||allClients[0];
 
   return <div>
     <div className="g4" style={{marginBottom:"1.1rem"}}>
       <div className="stat"><div className="stat-lbl">Total Clients</div><div className="stat-val">{allClients.length}</div><div className="stat-delta up">Active</div></div>
-      <div className="stat"><div className="stat-lbl">Assessments</div><div className="stat-val">{dbClients.length}</div><div className="stat-delta up">Completed</div></div>
-      <div className="stat"><div className="stat-lbl">Demo Clients</div><div className="stat-val">{DEMO_CLIENTS.length}</div><div className="stat-delta am">Sample data</div></div>
+      <div className="stat"><div className="stat-lbl">Real Signups</div><div className="stat-val">{realClients.length}</div><div className="stat-delta up">Assessed</div></div>
+      <div className="stat"><div className="stat-lbl">Demo Clients</div><div className="stat-val">{DEMO_CLIENTS.length}</div><div className="stat-delta am">Sample</div></div>
       <div className="stat"><div className="stat-lbl">Flagged</div><div className="stat-val" style={{color:B.alert}}>{DEMO_CLIENTS.filter(c=>c.status==="needs-attention").length}</div><div className="stat-delta dn">Follow up</div></div>
     </div>
     <div style={{display:"grid",gridTemplateColumns:"260px 1fr",gap:"1.1rem"}}>
       <div className="card" style={{padding:"1rem"}}>
-        <div className="fb" style={{marginBottom:"0.85rem",padding:"0 0.25rem"}}>
-          <div className="card-hd" style={{margin:0}}>Clients</div>
-        </div>
-        {dbClients.length>0&&<div style={{fontSize:"0.65rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.green,padding:"0.4rem 0.25rem"}}>Real Signups</div>}
+        {realClients.length>0&&<div style={{fontSize:"0.65rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.green,padding:"0.3rem 0.5rem 0.6rem"}}>Real Clients</div>}
         <div className="scroll mh400">
           {allClients.map(c=>(
-            <div key={c.id} className={`crow ${sel.id===c.id?"sel":""}`} onClick={()=>{setSel(c);setTab("assessment");}}>
+            <div key={c.id} className={`crow ${currentSel?.id===c.id?"sel":""}`} onClick={()=>{setSel(c);setTab("assessment");}}>
               <div className="cav" style={{background:c.col}}>{c.ini}</div>
               <div style={{flex:1}}>
                 <div className="cname">{c.name}</div>
@@ -546,42 +598,40 @@ function ManagerDash(){
           ))}
         </div>
       </div>
-      <div className="card">
+      {currentSel&&<div className="card">
         <div className="fg" style={{marginBottom:"1.25rem",flexWrap:"wrap",gap:"0.75rem"}}>
-          <div className="cav" style={{background:sel.col,width:50,height:50}}>{sel.ini}</div>
+          <div className="cav" style={{background:currentSel.col,width:50,height:50}}>{currentSel.ini}</div>
           <div style={{flex:1}}>
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"1.2rem",fontWeight:700,color:B.white,textTransform:"uppercase"}}>{sel.name}</div>
-            <div style={{fontSize:"0.78rem",color:B.grey}}>{sel.goal}{sel.weight?` · ${sel.weight}kg`:""}</div>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"1.2rem",fontWeight:700,color:B.white,textTransform:"uppercase"}}>{currentSel.name}</div>
+            <div style={{fontSize:"0.78rem",color:B.grey}}>{currentSel.goal}{currentSel.weight?` · ${currentSel.weight}kg`:""}{currentSel.email?` · ${currentSel.email}`:""}</div>
           </div>
-          <Badge status={sel.status}/>
+          <Badge status={currentSel.status}/>
         </div>
         <div style={{display:"flex",gap:"0.25rem",background:B.darker,borderRadius:"8px",padding:"0.3rem",border:`1px solid ${B.border}`,marginBottom:"1.25rem",flexWrap:"wrap"}}>
-          {["assessment","meal plan","supplements","messages","progress"].map(t=>(
-            <button key={t} onClick={()=>setTab(t)}
-              style={{padding:"0.35rem 0.9rem",borderRadius:"6px",border:"none",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:"0.7rem",fontWeight:700,letterSpacing:"0.06em",textTransform:"uppercase",background:tab===t?B.green:B.darker,color:tab===t?"white":B.grey,transition:"all 0.2s"}}>
-              {t}
-            </button>
+          {["assessment","meal plan","messages","progress"].map(t=>(
+            <button key={t} onClick={()=>setTab(t)} style={{padding:"0.35rem 0.9rem",borderRadius:"6px",border:"none",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:"0.7rem",fontWeight:700,letterSpacing:"0.06em",textTransform:"uppercase",background:tab===t?B.green:B.darker,color:tab===t?"white":B.grey,transition:"all 0.2s"}}>{t}</button>
           ))}
         </div>
+
         {tab==="assessment"&&(
-          sel.assessed&&(sel.assessmentData||sel.conditions) ? <div>
-            {sel.assessmentData&&<div style={{marginBottom:"1rem"}}>
+          currentSel.assessed ? <div>
+            {currentSel.assessmentData&&<div>
               <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.75rem",marginBottom:"1rem"}}>
-                {[["Age",sel.assessmentData.age+"yrs"],["Height",sel.assessmentData.height+"cm"],["Weight",sel.assessmentData.weight+"kg"],["Activity",sel.assessmentData.activityLevel?.split(" ")[0]],["Wake",sel.assessmentData.sleepWake],["Bed",sel.assessmentData.sleepBed]].map(([l,v])=>(
+                {[["Age",currentSel.assessmentData.age+"yrs"],["Height",currentSel.assessmentData.height+"cm"],["Weight",currentSel.assessmentData.weight+"kg"],["Activity",currentSel.assessmentData.activityLevel?.split(" ")[0]],["Wake",currentSel.assessmentData.sleepWake],["Bed",currentSel.assessmentData.sleepBed]].map(([l,v])=>(
                   <div key={l} style={{background:B.darker,border:`1px solid ${B.border}`,borderRadius:"8px",padding:"0.75rem",textAlign:"center"}}>
                     <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"1.1rem",fontWeight:700,color:B.white}}>{v||"—"}</div>
                     <div style={{fontSize:"0.65rem",color:B.grey,textTransform:"uppercase",letterSpacing:"0.08em"}}>{l}</div>
                   </div>
                 ))}
               </div>
-              {sel.assessmentData.goal&&<div style={{marginBottom:"0.75rem"}}><span style={{fontSize:"0.65rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.grey}}>Goal: </span><span style={{color:B.greenLt,fontWeight:600}}>{sel.assessmentData.goal}</span></div>}
-              {sel.assessmentData.conditions&&<div style={{marginBottom:"0.75rem"}}><div style={{fontSize:"0.65rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.grey,marginBottom:"0.3rem"}}>Health Conditions</div><span className="tag">{sel.assessmentData.conditions}</span></div>}
-              {sel.assessmentData.barriers?.length>0&&<div style={{marginBottom:"0.75rem"}}><div style={{fontSize:"0.65rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.grey,marginBottom:"0.3rem"}}>Barriers</div>{sel.assessmentData.barriers.map(b=><span key={b} className="tag">{b}</span>)}</div>}
-              {sel.assessmentData.notes&&<div><div style={{fontSize:"0.65rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.grey,marginBottom:"0.3rem"}}>Client Notes</div><div style={{background:B.darker,border:`1px solid ${B.border}`,borderRadius:"7px",padding:"0.75rem",fontSize:"0.84rem",color:B.greyLt}}>{sel.assessmentData.notes}</div></div>}
+              {currentSel.assessmentData.goal&&<div style={{marginBottom:"0.75rem"}}><span style={{fontSize:"0.65rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.grey}}>Goal: </span><span style={{color:B.greenLt,fontWeight:600}}>{currentSel.assessmentData.goal}</span></div>}
+              {currentSel.assessmentData.conditions&&<div style={{marginBottom:"0.75rem"}}><div style={{fontSize:"0.65rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.grey,marginBottom:"0.3rem"}}>Conditions</div><span className="tag">{currentSel.assessmentData.conditions}</span></div>}
+              {currentSel.assessmentData.barriers?.length>0&&<div style={{marginBottom:"0.75rem"}}><div style={{fontSize:"0.65rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.grey,marginBottom:"0.3rem"}}>Barriers</div>{currentSel.assessmentData.barriers.map(b=><span key={b} className="tag">{b}</span>)}</div>}
+              {currentSel.assessmentData.notes&&<div><div style={{fontSize:"0.65rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.grey,marginBottom:"0.3rem"}}>Notes</div><div style={{background:B.darker,border:`1px solid ${B.border}`,borderRadius:"7px",padding:"0.75rem",fontSize:"0.84rem",color:B.greyLt}}>{currentSel.assessmentData.notes}</div></div>}
             </div>}
-            {!sel.assessmentData&&<div>
-              {sel.conditions&&<div style={{marginBottom:"0.75rem"}}><div style={{fontSize:"0.65rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.grey,marginBottom:"0.3rem"}}>Conditions</div>{sel.conditions.map(c=><span key={c} className="tag">{c}</span>)}</div>}
-              {sel.tags&&<div><div style={{fontSize:"0.65rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.grey,marginBottom:"0.3rem"}}>Dietary</div>{sel.tags.map(t=><span key={t} className="tag" style={{background:"rgba(58,125,68,0.1)",color:B.greenLt}}>{t}</span>)}</div>}
+            {!currentSel.assessmentData&&<div>
+              {currentSel.conditions&&<div style={{marginBottom:"0.75rem"}}><div style={{fontSize:"0.65rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.grey,marginBottom:"0.3rem"}}>Conditions</div>{currentSel.conditions.map(c=><span key={c} className="tag">{c}</span>)}</div>}
+              {currentSel.tags&&<div><div style={{fontSize:"0.65rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.grey,marginBottom:"0.3rem"}}>Dietary</div>{currentSel.tags.map(t=><span key={t} className="tag" style={{background:"rgba(58,125,68,0.1)",color:B.greenLt}}>{t}</span>)}</div>}
             </div>}
           </div>
           :<div style={{textAlign:"center",padding:"3rem",color:B.grey}}>
@@ -590,11 +640,22 @@ function ManagerDash(){
             <div style={{fontSize:"0.84rem"}}>This client hasn't completed their assessment yet.</div>
           </div>
         )}
-        {tab==="meal plan"&&<AIMealGen client={sel}/>}
-        {tab==="supplements"&&<div><div className="card-hd">Supplement Protocol</div><div style={{color:B.grey,fontSize:"0.85rem",padding:"1rem 0"}}>No supplements assigned yet. This will be added in Phase 4.</div><button className="btn btn-g btn-sm">+ Add Supplement</button></div>}
-        {tab==="messages"&&<div><div className="card-hd">Messages</div><div style={{color:B.grey,fontSize:"0.85rem",padding:"1rem 0"}}>Real-time messaging coming in Phase 3.</div></div>}
-        {tab==="progress"&&<div><div className="card-hd">Progress Tracking</div><div style={{color:B.grey,fontSize:"0.85rem",padding:"1rem 0"}}>Progress tracking coming in Phase 5.</div></div>}
-      </div>
+
+        {tab==="meal plan"&&<AIMealGen client={currentSel}/>}
+
+        {tab==="messages"&&<div>
+          <div className="card-hd">Messages with {currentSel.name}</div>
+          {currentSel.email&&!currentSel.email.includes("demo")
+            ?<Messaging myEmail={managerUser.email} otherEmail={currentSel.email} myId={managerUser.id}/>
+            :<div style={{color:B.grey,fontSize:"0.85rem",padding:"1rem 0"}}>Messaging is only available for real clients who have signed up.</div>
+          }
+        </div>}
+
+        {tab==="progress"&&<div>
+          <div className="card-hd">Progress Tracking</div>
+          <div style={{color:B.grey,fontSize:"0.85rem",padding:"1rem 0"}}>Progress tracking coming in Phase 5.</div>
+        </div>}
+      </div>}
     </div>
   </div>;
 }
@@ -605,7 +666,6 @@ export default function App(){
   const [view,setView]=useState("dashboard");
   const [assessmentData,setAssessmentData]=useState(null);
   const [needsAssessment,setNeedsAssessment]=useState(false);
-
   const isManager=session?.user?.email===MANAGER_EMAIL;
 
   useEffect(()=>{
@@ -622,8 +682,7 @@ export default function App(){
   if(!session) return <><style>{G}</style><LoginPage/></>;
 
   const initials=isManager?"TS":(session.user.email[0].toUpperCase());
-
-  const clientLinks=[["📊","Dashboard","dashboard"],["📅","My Plan","plan"],["💊","Supplements","supps"],["💬","Messages","messages"],["📈","Progress","progress"]];
+  const clientLinks=[["📊","Dashboard","dashboard"],["📅","My Plan","plan"],["💬","Messages","messages"],["📈","Progress","progress"]];
   const managerLinks=[["👥","All Clients","dashboard"],["📊","Analytics","analytics"],["💬","Messages","messages"],["⚙️","Settings","settings"]];
   const links=isManager?managerLinks:clientLinks;
 
@@ -637,7 +696,7 @@ export default function App(){
       </div>}
       <div className="fg">
         <div className="nav-av">{initials}</div>
-        <span style={{fontSize:"0.78rem",color:B.grey}}>{session.user.email}</span>
+        <span style={{fontSize:"0.78rem",color:B.grey,maxWidth:180,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{session.user.email}</span>
         <button className="btn btn-ghost btn-sm" onClick={signOut}>Sign Out</button>
       </div>
     </nav>
@@ -652,24 +711,29 @@ export default function App(){
       </aside>
       <main className="content">
         {!isManager&&needsAssessment&&<Assessment user={session.user} onComplete={(d)=>{setAssessmentData(d);setNeedsAssessment(false);}}/>}
-        {!isManager&&!needsAssessment&&<>
+        {!isManager&&!needsAssessment&&view==="dashboard"&&<>
           <div className="ph">My <em>Dashboard</em></div>
           <div className="psub">Your personalised plan from Tom Saunders Nutrition</div>
           <ClientDash user={session.user} assessmentData={assessmentData}/>
         </>}
+        {!isManager&&!needsAssessment&&view==="messages"&&<>
+          <div className="ph">My <em>Messages</em></div>
+          <div className="psub">Direct messages with Tom Saunders</div>
+          <div className="card"><div className="card-hd">💬 Messages from Tom</div><Messaging myEmail={session.user.email} otherEmail={MANAGER_EMAIL} myId={session.user.id}/></div>
+        </>}
         {isManager&&view==="dashboard"&&<>
           <div className="ph"><em>TS Nutrition</em> — Client Management</div>
-          <div className="psub">View real client assessments and manage all your clients</div>
-          <ManagerDash/>
+          <div className="psub">View assessments, message clients and manage your practice</div>
+          <ManagerDash managerUser={session.user}/>
         </>}
         {isManager&&view==="preview"&&<>
           <div className="ph">Client <em>Preview</em></div>
           <div className="psub">This is what a client sees when logged in</div>
           <ClientDash user={session.user} assessmentData={null}/>
         </>}
-        {!["dashboard","preview"].includes(view)&&!needsAssessment&&<div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"60vh",flexDirection:"column",gap:"1rem",color:B.grey}}>
+        {!["dashboard","preview","messages"].includes(view)&&!needsAssessment&&<div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"60vh",flexDirection:"column",gap:"1rem",color:B.grey}}>
           <div style={{fontSize:"3rem"}}>🚧</div>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"1.2rem",fontWeight:700,color:B.greyLt,textTransform:"uppercase"}}>Coming in Next Phase</div>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"1.2rem",fontWeight:700,color:B.greyLt,textTransform:"uppercase"}}>Coming Soon</div>
           <div style={{fontSize:"0.85rem"}}>This section is being built step by step.</div>
         </div>}
       </main>
