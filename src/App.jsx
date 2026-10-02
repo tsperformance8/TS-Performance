@@ -233,10 +233,11 @@ const BF_OPTIONS_FEMALE = [
 const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
 /* ─── CALCULATIONS ───────────────────────────────────────────────────────── */
+// Harris-Benedict, revised (Roza & Shizgal, 1984)
 function calcBMR(weight, height, age, sex){
   if(!weight||!height||!age) return 0;
-  if(sex==="female") return 10*weight + 6.25*height - 5*age - 161;
-  return 10*weight + 6.25*height - 5*age + 5;
+  if(sex==="female") return 447.593 + 9.247*weight + 3.098*height - 4.330*age;
+  return 88.362 + 13.397*weight + 4.799*height - 5.677*age;
 }
 
 function calcTargets(profile, activityMult){
@@ -421,15 +422,36 @@ function DailyTargets({profile}){
 }
 
 /* ─── WEEKLY PLAN TARGETS ────────────────────────────────────────────────── */
-function WeeklyTargets({profile}){
-  const [weekPlan,setWeekPlan]=useState({
-    Mon:"gym_moderate",Tue:"run_5k",Wed:"rest",Thu:"gym_heavy",Fri:"gym_moderate",Sat:"football",Sun:"rest"
-  });
+const DEFAULT_WEEK={Mon:"rest",Tue:"rest",Wed:"rest",Thu:"rest",Fri:"rest",Sat:"rest",Sun:"rest"};
 
-  function setDay(day,actId){ setWeekPlan(p=>({...p,[day]:actId})); }
+function WeeklyTargets({profile, clientEmail}){
+  const [weekPlan,setWeekPlan]=useState(DEFAULT_WEEK);
+  const [saveState,setSaveState]=useState("");
+  const canSave = clientEmail && !clientEmail.includes("@demo.com");
+
+  useEffect(()=>{ loadPlan(); },[clientEmail]);
+
+  async function loadPlan(){
+    if(!canSave){ setWeekPlan(DEFAULT_WEEK); return; }
+    const {data}=await supabase.from("week_plans").select("plan").eq("client_email",clientEmail).maybeSingle();
+    setWeekPlan(data?.plan ? {...DEFAULT_WEEK,...data.plan} : DEFAULT_WEEK);
+  }
+
+  async function setDay(day,actId){
+    const next={...weekPlan,[day]:actId};
+    setWeekPlan(next);
+    if(!canSave) return;
+    setSaveState("Saving…");
+    const {error}=await supabase.from("week_plans").upsert({client_email:clientEmail,plan:next,updated_at:new Date().toISOString()});
+    setSaveState(error ? "Couldn't save — please try again" : "Saved ✓");
+    if(!error) setTimeout(()=>setSaveState(""),1500);
+  }
 
   return <div className="card">
-    <div className="card-hd">📅 Weekly Target Planner</div>
+    <div className="fb" style={{marginBottom:"0.85rem"}}>
+      <div className="card-hd" style={{margin:0}}>📅 Weekly Target Planner</div>
+      {saveState&&<span style={{fontSize:"0.75rem",color:saveState.startsWith("Couldn't")?B.alert:B.greenLt}}>{saveState}</span>}
+    </div>
     <div style={{fontSize:"0.78rem",color:B.grey,marginBottom:"1rem"}}>
       Set your activity for each day to see your personalised calorie and protein targets across the week.
     </div>
@@ -877,7 +899,7 @@ function ClientDash({user,assessmentData}){
     {profile ? <DailyTargets profile={profile}/> : <div className="card"><div style={{textAlign:"center",padding:"1.5rem",color:B.grey,fontSize:"0.85rem"}}>Complete your assessment to unlock personalised calorie targets.</div></div>}
 
     {/* Weekly Planner */}
-    {profile && <WeeklyTargets profile={profile}/>}
+    {profile && <WeeklyTargets profile={profile} clientEmail={user?.email}/>}
 
     {/* Hydration */}
     <div className="card">
@@ -1002,7 +1024,7 @@ function ManagerDash({managerUser}){
         {tab==="targets"&&profile&&<div>
           <div style={{marginBottom:"1rem"}}>
             <div style={{fontSize:"0.72rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.grey,marginBottom:"0.6rem"}}>BMR: {Math.round(calcBMR(profile.weight,profile.height,profile.age,profile.sex))} kcal · LBM: {Math.round(profile.weight*(1-profile.bodyFatPct/100))}kg · Goal adjustment: {GOAL_ADJUSTMENTS[profile.goal]?.label||"Maintenance"}</div>
-            <WeeklyTargets profile={profile}/>
+            <WeeklyTargets profile={profile} clientEmail={currentSel.email}/>
           </div>
         </div>}
         {tab==="targets"&&!profile&&<div style={{color:B.grey,fontSize:"0.85rem",padding:"1rem"}}>No assessment data available for this client.</div>}
@@ -1086,7 +1108,7 @@ export default function App(){
         {!isManager&&!needsAssessment&&view==="targets"&&<>
           <div className="ph">My <em>Targets</em></div>
           <div className="psub">Your weekly calorie, protein and hydration targets</div>
-          {assessmentData?.weight ? <WeeklyTargets profile={{weight:parseFloat(assessmentData.weight),height:parseFloat(assessmentData.height),age:parseFloat(assessmentData.age),sex:assessmentData.sex||"male",bodyFatPct:parseFloat(assessmentData.bodyFatPct)||20,goal:assessmentData.goal}}/> : <div className="card"><div style={{textAlign:"center",padding:"2rem",color:B.grey}}>Complete your assessment to see your targets.</div></div>}
+          {assessmentData?.weight ? <WeeklyTargets profile={{weight:parseFloat(assessmentData.weight),height:parseFloat(assessmentData.height),age:parseFloat(assessmentData.age),sex:assessmentData.sex||"male",bodyFatPct:parseFloat(assessmentData.bodyFatPct)||20,goal:assessmentData.goal}} clientEmail={session.user.email}/> : <div className="card"><div style={{textAlign:"center",padding:"2rem",color:B.grey}}>Complete your assessment to see your targets.</div></div>}
         </>}
         {!isManager&&!needsAssessment&&view==="messages"&&<>
           <div className="ph">My <em>Messages</em></div>
