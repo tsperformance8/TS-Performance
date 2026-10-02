@@ -177,26 +177,26 @@ select.inp option{background:${B.dark}}
 
 /* ─── ACTIVITY TYPES ─────────────────────────────────────────────────────── */
 const ACTIVITIES = [
-  {id:"rest",icon:"😴",name:"Rest Day",mult:1.2,desc:"No planned exercise"},
-  {id:"light_walk",icon:"🚶",name:"Light Walk",mult:1.3,desc:"30 min walk or light stretch"},
-  {id:"moderate_walk",icon:"🏃",name:"Moderate Walk",mult:1.35,desc:"45-60 min brisk walk"},
-  {id:"yoga",icon:"🧘",name:"Yoga / Mobility",mult:1.35,desc:"60 min yoga or mobility work"},
-  {id:"gym_light",icon:"🏋️",name:"Light Gym",mult:1.45,desc:"30-40 min weights session"},
-  {id:"gym_moderate",icon:"💪",name:"Gym Session",mult:1.55,desc:"45-60 min weights session"},
-  {id:"gym_heavy",icon:"🔥",name:"Heavy Gym",mult:1.6,desc:"60-75 min intense weights"},
-  {id:"run_5k",icon:"🏃‍♂️",name:"5K Run",mult:1.5,desc:"30-35 min run"},
-  {id:"run_10k",icon:"👟",name:"10K Run",mult:1.6,desc:"50-65 min run"},
-  {id:"run_half",icon:"🎽",name:"Half Marathon",mult:1.75,desc:"90+ min run"},
-  {id:"cycle_mod",icon:"🚴",name:"Cycling",mult:1.55,desc:"45-60 min moderate cycling"},
-  {id:"cycle_hard",icon:"⚡",name:"Hard Cycling",mult:1.65,desc:"60+ min intense cycling"},
-  {id:"swim",icon:"🏊",name:"Swimming",mult:1.55,desc:"45-60 min swim"},
-  {id:"football",icon:"⚽",name:"Football / Sport",mult:1.65,desc:"90 min game or training"},
-  {id:"hiit",icon:"🌪️",name:"HIIT Session",mult:1.6,desc:"30-45 min HIIT"},
-  {id:"double_mod",icon:"2️⃣",name:"Two Sessions",mult:1.75,desc:"Two moderate sessions"},
-  {id:"double_hard",icon:"💥",name:"Double Hard",mult:1.9,desc:"Two intense sessions"},
-  {id:"run_gym",icon:"🏅",name:"Run + Gym",mult:1.8,desc:"Run AND weights same day"},
-  {id:"comp",icon:"🏆",name:"Competition",mult:1.9,desc:"Match day / competition"},
-  {id:"custom",icon:"✏️",name:"Custom",mult:null,desc:"Enter your own multiplier"},
+  {id:"rest",icon:"",name:"Rest Day",mult:1.2,desc:"No planned exercise"},
+  {id:"light_walk",icon:"",name:"Light Walk",mult:1.3,desc:"30 min walk or light stretch"},
+  {id:"moderate_walk",icon:"",name:"Moderate Walk",mult:1.35,desc:"45-60 min brisk walk"},
+  {id:"yoga",icon:"",name:"Yoga / Mobility",mult:1.35,desc:"60 min yoga or mobility work"},
+  {id:"gym_light",icon:"",name:"Light Gym",mult:1.45,desc:"30-40 min weights session"},
+  {id:"gym_moderate",icon:"",name:"Gym Session",mult:1.55,desc:"45-60 min weights session"},
+  {id:"gym_heavy",icon:"",name:"Heavy Gym",mult:1.6,desc:"60-75 min intense weights"},
+  {id:"run_5k",icon:"",name:"5K Run",mult:1.5,desc:"30-35 min run"},
+  {id:"run_10k",icon:"",name:"10K Run",mult:1.6,desc:"50-65 min run"},
+  {id:"run_half",icon:"",name:"Half Marathon",mult:1.75,desc:"90+ min run"},
+  {id:"cycle_mod",icon:"",name:"Cycling",mult:1.55,desc:"45-60 min moderate cycling"},
+  {id:"cycle_hard",icon:"",name:"Hard Cycling",mult:1.65,desc:"60+ min intense cycling"},
+  {id:"swim",icon:"",name:"Swimming",mult:1.55,desc:"45-60 min swim"},
+  {id:"football",icon:"",name:"Football / Sport",mult:1.65,desc:"90 min game or training"},
+  {id:"hiit",icon:"",name:"HIIT Session",mult:1.6,desc:"30-45 min HIIT"},
+  {id:"double_mod",icon:"2",name:"Two Sessions",mult:1.75,desc:"Two moderate sessions"},
+  {id:"double_hard",icon:"",name:"Double Hard",mult:1.9,desc:"Two intense sessions"},
+  {id:"run_gym",icon:"",name:"Run + Gym",mult:1.8,desc:"Run AND weights same day"},
+  {id:"comp",icon:"",name:"Competition",mult:1.9,desc:"Match day / competition"},
+  {id:"custom",icon:"",name:"Custom",mult:null,desc:"Enter your own multiplier"},
 ];
 
 const GOAL_ADJUSTMENTS = {
@@ -213,21 +213,21 @@ const GOAL_ADJUSTMENTS = {
 };
 
 const BF_OPTIONS_MALE = [
-  {pct:8,figure:"🧍",label:"Very lean",desc:"Visible abs, very low fat"},
-  {pct:12,figure:"🧍",label:"Lean",desc:"Some ab definition"},
-  {pct:16,figure:"🧍",label:"Average fit",desc:"Athletic but not defined"},
-  {pct:22,figure:"🧍",label:"Average",desc:"Soft, minimal definition"},
-  {pct:28,figure:"🧍",label:"Above average",desc:"Carrying excess fat"},
-  {pct:35,figure:"🧍",label:"High body fat",desc:"Significant excess fat"},
+  {pct:8,figure:"",label:"Very lean",desc:"Visible abs, very low fat"},
+  {pct:12,figure:"",label:"Lean",desc:"Some ab definition"},
+  {pct:16,figure:"",label:"Average fit",desc:"Athletic but not defined"},
+  {pct:22,figure:"",label:"Average",desc:"Soft, minimal definition"},
+  {pct:28,figure:"",label:"Above average",desc:"Carrying excess fat"},
+  {pct:35,figure:"",label:"High body fat",desc:"Significant excess fat"},
 ];
 
 const BF_OPTIONS_FEMALE = [
-  {pct:15,figure:"🧍‍♀️",label:"Very lean",desc:"Visible muscle, very low fat"},
-  {pct:20,figure:"🧍‍♀️",label:"Lean",desc:"Toned, some definition"},
-  {pct:25,figure:"🧍‍♀️",label:"Average fit",desc:"Healthy, athletic build"},
-  {pct:30,figure:"🧍‍♀️",label:"Average",desc:"Soft, healthy range"},
-  {pct:36,figure:"🧍‍♀️",label:"Above average",desc:"Carrying some excess fat"},
-  {pct:42,figure:"🧍‍♀️",label:"High body fat",desc:"Significant excess fat"},
+  {pct:15,figure:"",label:"Very lean",desc:"Visible muscle, very low fat"},
+  {pct:20,figure:"",label:"Lean",desc:"Toned, some definition"},
+  {pct:25,figure:"",label:"Average fit",desc:"Healthy, athletic build"},
+  {pct:30,figure:"",label:"Average",desc:"Soft, healthy range"},
+  {pct:36,figure:"",label:"Above average",desc:"Carrying some excess fat"},
+  {pct:42,figure:"",label:"High body fat",desc:"Significant excess fat"},
 ];
 
 const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
@@ -323,7 +323,7 @@ function Messaging({myEmail,otherEmail,myId}){
   return <div>
     <div className="msg-wrap">
       {messages.length===0
-        ?<div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100%",flexDirection:"column",gap:"0.5rem",color:B.grey}}><div style={{fontSize:"1.5rem"}}>💬</div><div style={{fontSize:"0.85rem"}}>No messages yet.</div></div>
+        ?<div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100%",flexDirection:"column",gap:"0.5rem",color:B.grey}}><div style={{fontSize:"1.5rem"}}></div><div style={{fontSize:"0.85rem"}}>No messages yet.</div></div>
         :messages.map((m,i)=>{
           const mine=m.sender_email===myEmail;
           return <div key={i} className={`msg-row ${mine?"mine":"theirs"}`}>
@@ -351,7 +351,7 @@ function DailyTargets({profile}){
   const goalLabel = GOAL_ADJUSTMENTS[profile?.goal]?.label || "Maintenance";
 
   return <div className="card">
-    <div className="card-hd">📊 Today's Nutrition Targets</div>
+    <div className="card-hd"> Today's Nutrition Targets</div>
 
     <div style={{marginBottom:"1rem"}}>
       <div style={{fontSize:"0.72rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.grey,marginBottom:"0.6rem"}}>
@@ -449,7 +449,7 @@ function WeeklyTargets({profile, clientEmail}){
 
   return <div className="card">
     <div className="fb" style={{marginBottom:"0.85rem"}}>
-      <div className="card-hd" style={{margin:0}}>📅 Weekly Target Planner</div>
+      <div className="card-hd" style={{margin:0}}> Weekly Target Planner</div>
       {saveState&&<span style={{fontSize:"0.75rem",color:saveState.startsWith("Couldn't")?B.alert:B.greenLt}}>{saveState}</span>}
     </div>
     <div style={{fontSize:"0.78rem",color:B.grey,marginBottom:"1rem"}}>
@@ -464,7 +464,7 @@ function WeeklyTargets({profile, clientEmail}){
         <div className="week-sel">
           <select className="inp" style={{padding:"0.4rem 0.6rem",fontSize:"0.8rem"}} value={actId} onChange={e=>setDay(day,e.target.value)}>
             {ACTIVITIES.filter(a=>a.id!=="custom").map(a=>(
-              <option key={a.id} value={a.id}>{a.icon} {a.name}</option>
+              <option key={a.id} value={a.id}>{a.name}</option>
             ))}
           </select>
         </div>
@@ -503,20 +503,20 @@ function Routines({clientEmail, isManager}){
   function parseItems(text){ return text ? text.split("\n").filter(l=>l.trim()) : []; }
 
   if(isManager && editing) return <div className="card">
-    <div className="card-hd">✏️ Edit Routines & Supplements</div>
+    <div className="card-hd"> Edit Routines & Supplements</div>
     <div style={{fontSize:"0.78rem",color:B.grey,marginBottom:"1rem"}}>Enter each item on a new line. You can include times e.g. "07:00 — Drink 500ml water with salt and lemon"</div>
     <div className="g2" style={{marginBottom:"1rem"}}>
       <div>
-        <div className="inp-group"><label className="inp-label">☀️ Morning Routine</label><textarea className="inp" rows={6} value={draft.morning} onChange={e=>setDraft(d=>({...d,morning:e.target.value}))} placeholder={"07:00 — Get morning sunlight\n07:05 — Drink 500ml water with salt and lemon\n07:10 — Breathwork (5 minutes)\n07:15 — Cold shower"}/></div>
-        <div className="inp-group"><label className="inp-label">💊 AM Supplements</label><textarea className="inp" rows={4} value={draft.amSupps} onChange={e=>setDraft(d=>({...d,amSupps:e.target.value}))} placeholder={"Vitamin D3 K2 — 2000 IU\nOmega-3 — 1000mg EPA/DHA\nCreatine Monohydrate — 5g"}/></div>
+        <div className="inp-group"><label className="inp-label"> Morning Routine</label><textarea className="inp" rows={6} value={draft.morning} onChange={e=>setDraft(d=>({...d,morning:e.target.value}))} placeholder={"07:00 — Get morning sunlight\n07:05 — Drink 500ml water with salt and lemon\n07:10 — Breathwork (5 minutes)\n07:15 — Cold shower"}/></div>
+        <div className="inp-group"><label className="inp-label"> AM Supplements</label><textarea className="inp" rows={4} value={draft.amSupps} onChange={e=>setDraft(d=>({...d,amSupps:e.target.value}))} placeholder={"Vitamin D3 K2 — 2000 IU\nOmega-3 — 1000mg EPA/DHA\nCreatine Monohydrate — 5g"}/></div>
       </div>
       <div>
-        <div className="inp-group"><label className="inp-label">🌙 Evening Routine</label><textarea className="inp" rows={6} value={draft.evening} onChange={e=>setDraft(d=>({...d,evening:e.target.value}))} placeholder={"21:00 — Remove blue light / screens off\n21:15 — Foam roll and stretch\n21:30 — Read or journal\n22:00 — Floss, tongue scrape and brush teeth"}/></div>
-        <div className="inp-group"><label className="inp-label">💊 PM Supplements</label><textarea className="inp" rows={4} value={draft.pmSupps} onChange={e=>setDraft(d=>({...d,pmSupps:e.target.value}))} placeholder={"Magnesium Glycinate — 400mg\nLion's Mane — 1000mg\nL-Theanine — 200mg"}/></div>
+        <div className="inp-group"><label className="inp-label"> Evening Routine</label><textarea className="inp" rows={6} value={draft.evening} onChange={e=>setDraft(d=>({...d,evening:e.target.value}))} placeholder={"21:00 — Remove blue light / screens off\n21:15 — Foam roll and stretch\n21:30 — Read or journal\n22:00 — Floss, tongue scrape and brush teeth"}/></div>
+        <div className="inp-group"><label className="inp-label"> PM Supplements</label><textarea className="inp" rows={4} value={draft.pmSupps} onChange={e=>setDraft(d=>({...d,pmSupps:e.target.value}))} placeholder={"Magnesium Glycinate — 400mg\nLion's Mane — 1000mg\nL-Theanine — 200mg"}/></div>
       </div>
     </div>
     <div className="fg">
-      <button className="btn btn-g" onClick={save} disabled={saving}>{saving?"Saving…":"Save Routine ✓"}</button>
+      <button className="btn btn-g" onClick={save} disabled={saving}>{saving?"Saving…":"Save Routine "}</button>
       <button className="btn btn-o" onClick={()=>setEditing(false)}>Cancel</button>
     </div>
   </div>;
@@ -529,14 +529,14 @@ function Routines({clientEmail, isManager}){
 
   return <div className="card">
     <div className="fb" style={{marginBottom:"1rem"}}>
-      <div className="card-hd" style={{margin:0}}>🌅 Daily Routines & Supplements</div>
-      {isManager&&<button className="btn btn-ghost btn-sm" onClick={()=>setEditing(true)}>✏️ Edit</button>}
+      <div className="card-hd" style={{margin:0}}> Daily Routines & Supplements</div>
+      {isManager&&<button className="btn btn-ghost btn-sm" onClick={()=>setEditing(true)}> Edit</button>}
     </div>
     {!hasContent ? <div style={{textAlign:"center",padding:"2rem",color:B.grey,fontSize:"0.85rem"}}>
       {isManager?"Click Edit to add this client's morning and evening routines.":"Your coach will add your daily routines here soon."}
     </div> : <div className="g2">
       <div>
-        <div style={{fontSize:"0.72rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.green,marginBottom:"0.5rem"}}>☀️ Morning Routine</div>
+        <div style={{fontSize:"0.72rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.green,marginBottom:"0.5rem"}}> Morning Routine</div>
         {morningItems.map((item,i)=>{
           const parts=item.split("—");
           const time=parts.length>1?parts[0].trim():null;
@@ -548,7 +548,7 @@ function Routines({clientEmail, isManager}){
           </div>;
         })}
         {amSuppItems.length>0&&<>
-          <div style={{fontSize:"0.72rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.amber,margin:"0.85rem 0 0.5rem"}}>💊 AM Supplements</div>
+          <div style={{fontSize:"0.72rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.amber,margin:"0.85rem 0 0.5rem"}}> AM Supplements</div>
           {amSuppItems.map((item,i)=>{
             const parts=item.split("—");
             const name=parts[0].trim();
@@ -564,7 +564,7 @@ function Routines({clientEmail, isManager}){
         </>}
       </div>
       <div>
-        <div style={{fontSize:"0.72rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.blue,marginBottom:"0.5rem"}}>🌙 Evening Routine</div>
+        <div style={{fontSize:"0.72rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.blue,marginBottom:"0.5rem"}}> Evening Routine</div>
         {eveningItems.map((item,i)=>{
           const parts=item.split("—");
           const time=parts.length>1?parts[0].trim():null;
@@ -576,7 +576,7 @@ function Routines({clientEmail, isManager}){
           </div>;
         })}
         {pmSuppItems.length>0&&<>
-          <div style={{fontSize:"0.72rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.amber,margin:"0.85rem 0 0.5rem"}}>💊 PM Supplements</div>
+          <div style={{fontSize:"0.72rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.amber,margin:"0.85rem 0 0.5rem"}}> PM Supplements</div>
           {pmSuppItems.map((item,i)=>{
             const parts=item.split("—");
             const name=parts[0].trim();
@@ -833,7 +833,7 @@ function Assessment({user,onComplete}){
         <div style={{fontSize:"0.78rem",color:B.grey}}>Step {step+1} of {total}</div>
         <div className="fg">
           {step>0&&<button className="btn btn-o btn-sm" onClick={()=>setStep(s=>s-1)}>← Back</button>}
-          {step<total-1?<button className="btn btn-g btn-sm" onClick={()=>setStep(s=>s+1)}>Continue →</button>:<button className="btn btn-g" onClick={submit} disabled={saving}>{saving?"Saving…":"Submit Assessment ✓"}</button>}
+          {step<total-1?<button className="btn btn-g btn-sm" onClick={()=>setStep(s=>s+1)}>Continue →</button>:<button className="btn btn-g" onClick={submit} disabled={saving}>{saving?"Saving…":"Submit Assessment "}</button>}
         </div>
       </div>
     </div>
@@ -855,10 +855,10 @@ function AIMealGen({client}){
     }catch(e){setResult("Error. Please try again.");setLoading(false);}
   }
   return <div>
-    <div className="card-hd">✦ AI Meal Plan Generator</div>
+    <div className="card-hd"> AI Meal Plan Generator</div>
     <textarea className="inp" rows={4} value={prompt} onChange={e=>setPrompt(e.target.value)} style={{marginBottom:"0.75rem"}}/>
     <div className="fg" style={{marginBottom:"0.75rem"}}>
-      <button className="btn btn-g btn-sm" onClick={generate} disabled={loading}>{loading?"Generating…":"✦ Generate Plan"}</button>
+      <button className="btn btn-g btn-sm" onClick={generate} disabled={loading}>{loading?"Generating…":" Generate Plan"}</button>
       {result&&<button className="btn btn-o btn-sm" onClick={()=>setResult("")}>Clear</button>}
     </div>
     {loading&&!result&&<div style={{display:"flex",alignItems:"center",gap:"0.5rem",color:B.grey,fontSize:"0.8rem"}}><div className="dot-pulse"><span/><span/><span/></div><span>Building plan…</span></div>}
@@ -904,7 +904,7 @@ function ClientDash({user,assessmentData}){
     {/* Hydration */}
     <div className="card">
       <div className="fb" style={{marginBottom:"0.85rem"}}>
-        <div className="card-hd" style={{margin:0}}>💧 Hydration Tracker</div>
+        <div className="card-hd" style={{margin:0}}> Hydration Tracker</div>
         <span style={{fontSize:"0.78rem",color:B.grey}}>{(water*cupSize).toFixed(2)}L / {hydrationTarget}L target</span>
       </div>
       <div style={{display:"flex",gap:"0.4rem",flexWrap:"wrap",marginBottom:"0.5rem"}}>
@@ -917,7 +917,7 @@ function ClientDash({user,assessmentData}){
 
     {/* Messages */}
     <div className="card">
-      <div className="card-hd">💬 Messages from Tom</div>
+      <div className="card-hd"> Messages from Tom</div>
       <Messaging myEmail={user?.email} otherEmail={MANAGER_EMAIL} myId={user?.id}/>
     </div>
   </div>;
@@ -1016,7 +1016,7 @@ function ManagerDash({managerUser}){
             {currentSel.assessmentData.notes&&<div><div style={{fontSize:"0.65rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.grey,marginBottom:"0.3rem"}}>Notes</div><div style={{background:B.darker,border:`1px solid ${B.border}`,borderRadius:"7px",padding:"0.75rem",fontSize:"0.84rem",color:B.greyLt}}>{currentSel.assessmentData.notes}</div></div>}
           </div>
           :<div style={{textAlign:"center",padding:"3rem",color:B.grey}}>
-            <div style={{fontSize:"2rem",marginBottom:"0.5rem"}}>📋</div>
+            <div style={{fontSize:"2rem",marginBottom:"0.5rem"}}></div>
             <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"1rem",fontWeight:700,color:B.greyLt,textTransform:"uppercase",marginBottom:"0.35rem"}}>Assessment Pending</div>
           </div>
         )}
@@ -1033,7 +1033,7 @@ function ManagerDash({managerUser}){
         {tab==="meal plan"&&<AIMealGen client={currentSel}/>}
 
         {tab==="messages"&&<div>
-          <div className="card-hd">💬 Messages with {currentSel.name}</div>
+          <div className="card-hd"> Messages with {currentSel.name}</div>
           {currentSel.email&&!currentSel.email.includes("demo")
             ?<Messaging myEmail={managerUser.email} otherEmail={currentSel.email} myId={managerUser.id}/>
             :<div style={{color:B.grey,fontSize:"0.85rem",padding:"1rem 0"}}>Messaging only available for real clients.</div>
@@ -1041,11 +1041,483 @@ function ManagerDash({managerUser}){
         </div>}
 
         {tab==="progress"&&<div>
-          <div className="card-hd">📈 Progress Tracking</div>
+          <div className="card-hd"> Progress Tracking</div>
           <div style={{color:B.grey,fontSize:"0.85rem",padding:"1rem 0"}}>Progress tracking coming in Phase 5.</div>
         </div>}
       </div>}
     </div>
+  </div>;
+}
+
+/* ─── MOBILE CLIENT APP (v7) ─────────────────────────────────────────────── */
+const COACH = { name:"Tom Saunders", photo:"/coach.jpg", tagline:"Make the best decisions at the right moments" };
+
+const M = {
+  bg:"#121212", card:"#1C1C1C", card2:"#242424", line:"#2A2A2A",
+  green:"#5EC431", greenInk:"#0E1A08", amber:"#F2A93B",
+  text:"#F2F2F2", muted:"#8E918C", faint:"#5C605A",
+};
+
+const MCSS = `
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&display=swap');
+.m-app{max-width:480px;margin:0 auto;min-height:100dvh;background:${M.bg};color:${M.text};font-family:'Barlow',sans-serif;padding-bottom:calc(88px + env(safe-area-inset-bottom));position:relative}
+.m-app.embedded{min-height:0;height:760px;overflow-y:auto;border:1px solid ${M.line};border-radius:24px;padding-bottom:0}
+.m-head{display:flex;align-items:center;gap:14px;padding:calc(18px + env(safe-area-inset-top)) 20px 18px;border-bottom:1px solid ${M.line}}
+.m-avatar{width:56px;height:56px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid ${M.green}}
+.m-hi{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:0.02em;line-height:1}
+.m-tag{color:${M.muted};font-style:italic;font-size:0.9rem;margin-top:4px;line-height:1.3}
+.m-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.02em;line-height:1}
+.m-sec{padding:20px}
+.m-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.m-date{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:0.02em}
+.m-streak{display:inline-flex;align-items:center;gap:6px;background:rgba(242,169,59,0.12);color:${M.amber};font-weight:700;font-size:0.85rem;padding:6px 10px;border-radius:8px}
+.m-week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:16px}
+.m-day{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:none;color:inherit;cursor:pointer;padding:0;font-family:inherit}
+.m-dot{width:100%;max-width:46px;aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid transparent;transition:border-color .15s}
+.m-day.sel .m-dot{border-color:${M.text}}
+.m-dlabel{font-size:0.75rem;color:${M.muted};font-weight:600}
+.m-day.today .m-dlabel{color:${M.green}}
+.m-dnum{font-size:0.72rem;color:${M.faint}}
+.m-fuel{background:${M.card};border-radius:16px;padding:18px;margin-top:18px}
+.m-kcal{font-family:'Bebas Neue',sans-serif;font-size:3.4rem;line-height:0.9;color:${M.text}}
+.m-unit{font-size:0.9rem;color:${M.muted};margin-left:6px;font-family:'Barlow',sans-serif;font-weight:600}
+.m-macros{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:16px}
+.m-macro{background:${M.card2};border-radius:10px;padding:10px 8px;text-align:center}
+.m-macro b{display:block;font-family:'Bebas Neue',sans-serif;font-size:1.35rem;font-weight:400;letter-spacing:0.02em}
+.m-macro span{font-size:0.72rem;color:${M.muted}}
+.m-act{display:flex;align-items:center;gap:8px;color:${M.muted};font-size:0.9rem;font-weight:600}
+.m-h2{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:0.03em;margin:26px 0 12px}
+.m-group{margin-bottom:14px}
+.m-glabel{display:flex;align-items:center;gap:8px;color:${M.muted};font-size:0.82rem;font-weight:600;margin:0 0 8px 2px}
+.m-item{display:flex;align-items:center;gap:12px;width:100%;background:${M.card};border:none;border-radius:12px;padding:14px;margin-bottom:6px;color:${M.text};font-family:inherit;font-size:0.98rem;text-align:left;cursor:pointer}
+.m-item:disabled{cursor:default;opacity:0.55}
+.m-check{width:24px;height:24px;border-radius:50%;border:2px solid ${M.faint};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.m-item.done .m-check{background:${M.green};border-color:${M.green};color:${M.greenInk}}
+.m-item.done .m-itext{color:${M.muted};text-decoration:line-through}
+.m-progress{height:6px;background:${M.card2};border-radius:3px;overflow:hidden;margin-top:6px}
+.m-progress div{height:100%;background:${M.green};transition:width .3s}
+.m-empty{text-align:center;padding:36px 20px;color:${M.muted}}
+.m-empty h3{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;font-weight:400;color:${M.text};margin:14px 0 6px;letter-spacing:0.02em}
+.m-link{background:none;border:none;color:${M.green};font:inherit;text-decoration:underline;cursor:pointer;padding:0}
+.m-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(480px,100%);background:${M.bg};border-top:1px solid ${M.line};display:grid;grid-template-columns:repeat(3,1fr);padding-bottom:env(safe-area-inset-bottom);z-index:50}
+.m-app.embedded .m-nav{position:sticky;transform:none;left:auto;width:100%}
+.m-tab{background:none;border:none;border-top:2px solid transparent;color:${M.muted};display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0 12px;font-family:inherit;font-size:0.78rem;font-weight:600;cursor:pointer;margin-top:-1px}
+.m-tab.on{color:${M.green};border-top-color:${M.green}}
+.m-chat{display:flex;flex-direction:column;min-height:calc(100dvh - 88px - 93px)}
+.m-app.embedded .m-chat{min-height:560px}
+.m-msgs{flex:1;padding:16px 16px 8px;display:flex;flex-direction:column;gap:6px}
+.m-bub{max-width:78%;padding:10px 14px;border-radius:18px;font-size:0.96rem;line-height:1.4;white-space:pre-wrap;word-wrap:break-word}
+.m-bub.mine{align-self:flex-end;background:${M.green};color:${M.greenInk};border-bottom-right-radius:6px}
+.m-bub.theirs{align-self:flex-start;background:${M.card2};border-bottom-left-radius:6px}
+.m-time{font-size:0.68rem;color:${M.faint};margin:0 6px 6px}
+.m-time.mine{align-self:flex-end}
+.m-compose{position:sticky;bottom:calc(64px + env(safe-area-inset-bottom));display:flex;gap:10px;padding:12px 16px;background:${M.bg};border-top:1px solid ${M.line}}
+.m-app.embedded .m-compose{bottom:64px}
+.m-input{flex:1;background:${M.card};border:1px solid ${M.line};border-radius:12px;padding:12px 14px;color:${M.text};font-family:inherit;font-size:1rem;outline:none}
+.m-input:focus{border-color:${M.green}}
+.m-send{width:48px;height:48px;border-radius:50%;border:none;background:${M.green};color:${M.greenInk};display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.m-send:disabled{background:${M.card2};color:${M.faint};cursor:default}
+.m-card{background:${M.card};border-radius:14px;padding:16px;display:flex;align-items:center;gap:14px}
+.m-ini{width:56px;height:56px;border-radius:50%;background:${M.card2};display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:${M.green};flex-shrink:0}
+.m-name{font-weight:700;font-size:1.05rem}
+.m-sub{color:${M.muted};font-size:0.88rem;margin-top:2px;word-break:break-all}
+.m-tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.m-tile{background:${M.card};border-radius:14px;padding:16px}
+.m-tile b{display:flex;align-items:center;gap:8px;font-family:'Bebas Neue',sans-serif;font-size:2.4rem;font-weight:400;line-height:1}
+.m-tile span{color:${M.muted};font-size:0.88rem}
+.m-list{display:flex;flex-direction:column;gap:8px}
+.m-li{display:flex;align-items:center;gap:14px;background:${M.card};border:none;border-radius:12px;padding:12px 14px;color:${M.text};font-family:inherit;font-size:1rem;cursor:pointer;width:100%;text-align:left}
+.m-lic{width:40px;height:40px;border-radius:10px;background:${M.card2};display:flex;align-items:center;justify-content:center;color:${M.green};flex-shrink:0}
+.m-back{display:flex;align-items:center;gap:6px;background:none;border:none;color:${M.muted};font-family:inherit;font-size:0.95rem;font-weight:600;cursor:pointer;padding:0}
+.m-select{background:${M.card2};border:1px solid ${M.line};color:${M.text};border-radius:10px;padding:10px;font-family:inherit;font-size:0.95rem;width:100%}
+.m-wrow{display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:12px;background:${M.card};border-radius:12px;padding:10px 12px;margin-bottom:6px}
+.m-wday{font-family:'Bebas Neue',sans-serif;font-size:1.3rem}
+.m-wk{text-align:right;font-size:0.85rem;color:${M.muted};min-width:64px}
+.m-wk b{display:block;color:${M.text};font-size:1rem}
+.m-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.m-stat{background:${M.card};border-radius:12px;padding:12px;text-align:center}
+.m-stat b{display:block;font-family:'Bebas Neue',sans-serif;font-size:1.5rem;font-weight:400}
+.m-stat span{font-size:0.75rem;color:${M.muted}}
+.m-note{font-size:0.82rem;color:${M.muted};margin-top:6px;min-height:1.2em}
+.m-colA{padding-bottom:0}
+.m-colB{padding-top:0}
+.m-brand{display:none}
+@media (min-width:900px){
+  .m-app:not(.embedded){max-width:none;padding:0 0 0 240px}
+  .m-app:not(.embedded) .m-nav{top:0;bottom:0;left:0;transform:none;width:240px;display:flex;flex-direction:column;gap:4px;padding:28px 16px;border-top:none;border-right:1px solid ${M.line}}
+  .m-app:not(.embedded) .m-brand{display:flex;align-items:center;gap:12px;padding:0 8px 28px;font-weight:700;font-size:0.95rem;line-height:1.15}
+  .m-app:not(.embedded) .m-brand em{font-style:normal;color:${M.green}}
+  .m-brandmark{width:44px;height:44px;border-radius:8px;background:${M.green};color:${M.greenInk};display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:0.02em}
+  .m-app:not(.embedded) .m-tab{flex-direction:row;justify-content:flex-start;gap:14px;padding:12px 14px;border-top:none;border-radius:10px;font-size:1rem;margin:0}
+  .m-app:not(.embedded) .m-tab.on{background:rgba(94,196,49,0.12)}
+  .m-app:not(.embedded) .m-tab:hover:not(.on){background:${M.card}}
+  .m-app:not(.embedded) .m-main{max-width:1120px;margin:0 auto;padding:0 32px}
+  .m-app:not(.embedded) .m-main-chat,.m-app:not(.embedded) .m-main-profile{max-width:760px}
+  .m-app:not(.embedded) .m-head{padding:32px 0 24px}
+  .m-app:not(.embedded) .m-sec{padding:28px 0}
+  .m-app:not(.embedded) .m-today{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:40px;align-items:start}
+  .m-app:not(.embedded) .m-colB{padding-top:28px}
+  .m-app:not(.embedded) .m-colB .m-h2{margin-top:0}
+  .m-app:not(.embedded) .m-colA{position:sticky;top:0}
+  .m-app:not(.embedded) .m-kcal{font-size:4.4rem}
+  .m-app:not(.embedded) .m-chat{min-height:100dvh}
+  .m-app:not(.embedded) .m-compose{bottom:0;padding:16px 0 24px}
+  .m-app:not(.embedded) .m-msgs{padding:24px 0 8px}
+  .m-app:not(.embedded) .m-item:hover:not(:disabled){background:${M.card2}}
+  .m-app:not(.embedded) .m-li:hover{background:${M.card2}}
+}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid ${M.green};outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+`;
+
+const ICON_PATHS = {
+  home:"M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z",
+  chat:"M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12z",
+  user:"M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0",
+  moon:"M20 13.5A8.5 8.5 0 1 1 10.5 4a6.5 6.5 0 0 0 9.5 9.5z",
+  walk:"M13 5a1.6 1.6 0 1 0 0-3.2A1.6 1.6 0 0 0 13 5zM10 21l2.2-6.5L15 17v4M12.2 14.5 11 9.5l-3 2.5M11 9.5l3.5.5 2 3",
+  yoga:"M12 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM4 10h16M12 10v5M12 15l-4 6M12 15l4 6",
+  gym:"M6.5 7v10M3.5 9.5v5M17.5 7v10M20.5 9.5v5M6.5 12h11",
+  run:"M3 12h4l3-8 4 16 3-8h4",
+  bike:"M5.5 18a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM18.5 18a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM5.5 14.5 9 8h6l3.5 6.5M9 8 7.5 5H6M12 14.5 15 8",
+  swim:"M2 15c2 0 2-1.5 4-1.5S8 15 10 15s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5M2 20c2 0 2-1.5 4-1.5S8 20 10 20s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5M8 11l4-4 3 3M16 7a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z",
+  ball:"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7.5l3.8 2.8-1.4 4.5H9.6l-1.4-4.5z",
+  zap:"M13 2 4 14h7l-1 8 9-12h-7z",
+  layers:"M12 3 2 8l10 5 10-5zM2 13l10 5 10-5",
+  trophy:"M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4",
+  flame:"M12 22a7 7 0 0 0 7-7c0-4.5-4-7-5-12-3 2.5-5 6-5 9-1.2-.8-2-2-2.2-3.5C5.5 10.2 5 12.6 5 15a7 7 0 0 0 7 7z",
+  check:"M5 12.5l4.5 4.5L19 7",
+  drop:"M12 3s7 7.5 7 12a7 7 0 0 1-14 0c0-4.5 7-12 7-12z",
+  sun:"M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4",
+  pill:"M10.5 3.5a5 5 0 0 1 7 7l-7 7a5 5 0 0 1-7-7zM7 10l7 7",
+  chevron:"M9 6l6 6-6 6",
+  back:"M15 6l-6 6 6 6",
+  send:"M4 12 20 4l-5 16-3.5-6.5z",
+  calendar:"M4 6h16v15H4zM4 10h16M8 3v4M16 3v4",
+  clipboard:"M9 4h6v3H9zM7 5.5H5V21h14V5.5h-2M8.5 12h7M8.5 16h7",
+  logout:"M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 16l4-4-4-4M14 12H4",
+};
+
+function Icon({name,size=20,sw=1.8}){
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d={ICON_PATHS[name]||ICON_PATHS.calendar}/>
+  </svg>;
+}
+
+function activityIcon(id=""){
+  if(id==="rest") return "moon";
+  if(id.includes("walk")) return "walk";
+  if(id==="yoga") return "yoga";
+  if(id.startsWith("gym")) return "gym";
+  if(id.startsWith("run_gym")) return "layers";
+  if(id.startsWith("run")) return "run";
+  if(id.startsWith("cycle")) return "bike";
+  if(id==="swim") return "swim";
+  if(id==="football") return "ball";
+  if(id==="hiit") return "zap";
+  if(id.startsWith("double")) return "layers";
+  if(id==="comp") return "trophy";
+  return "calendar";
+}
+
+function localISO(d){ const z=new Date(d.getTime()-d.getTimezoneOffset()*60000); return z.toISOString().slice(0,10); }
+function weekDates(ref=new Date()){
+  const d=new Date(ref); const dow=(d.getDay()+6)%7; d.setDate(d.getDate()-dow);
+  return DAYS.map((_,i)=>{ const x=new Date(d); x.setDate(d.getDate()+i); return x; });
+}
+function linesOf(t){ return t ? t.split("\n").map(l=>l.trim()).filter(Boolean) : []; }
+function intensity(mult){ return Math.max(0,Math.min(1,((mult||1.2)-1.2)/0.7)); }
+
+function TodayScreen({firstName,profile,weekPlan,routine,email,canWrite,onStreak,goChat}){
+  const dates=weekDates();
+  const todayISO=localISO(new Date());
+  const [selISO,setSelISO]=useState(todayISO);
+  const [done,setDone]=useState([]);
+  const [note,setNote]=useState("");
+
+  const selIdx=dates.findIndex(d=>localISO(d)===selISO);
+  const selDay=DAYS[selIdx<0?0:selIdx];
+  const act=ACTIVITIES.find(a=>a.id===(weekPlan[selDay]||"rest"))||ACTIVITIES[0];
+  const t=profile?.weight ? calcTargets(profile, act.mult||1.2) : null;
+  const isFuture=selISO>todayISO;
+
+  const groups=[
+    {key:"morning",label:"Morning routine",icon:"sun",items:linesOf(routine?.morning)},
+    {key:"am",label:"Morning supplements",icon:"pill",items:linesOf(routine?.am_supps)},
+    {key:"water",label:"Hydration",icon:"drop",items:t?[`Drink ${t.hydration} L of water`]:[]},
+    {key:"pm",label:"Evening supplements",icon:"pill",items:linesOf(routine?.pm_supps)},
+    {key:"evening",label:"Evening routine",icon:"moon",items:linesOf(routine?.evening)},
+  ].filter(g=>g.items.length);
+  const allKeys=groups.flatMap(g=>g.items.map(i=>`${g.key}:${i}`));
+  const hasRoutine=!!(routine&&(routine.morning||routine.evening||routine.am_supps||routine.pm_supps));
+  const doneCount=allKeys.filter(k=>done.includes(k)).length;
+
+  useEffect(()=>{ loadDay(); },[selISO,email]);
+
+  async function loadDay(){
+    setDone([]); setNote("");
+    if(!email) return;
+    const {data}=await supabase.from("daily_logs").select("done").eq("client_email",email).eq("log_date",selISO).maybeSingle();
+    setDone(Array.isArray(data?.done)?data.done:[]);
+  }
+
+  async function toggle(k){
+    if(!canWrite||isFuture) return;
+    const next=done.includes(k)?done.filter(x=>x!==k):[...done,k];
+    setDone(next);
+    const complete=allKeys.length>0&&allKeys.every(x=>next.includes(x));
+    const {error}=await supabase.from("daily_logs").upsert({client_email:email,log_date:selISO,done:next,complete,updated_at:new Date().toISOString()});
+    if(error){ setNote("That tick didn't save. Check your connection and try again."); setDone(done); }
+    else { setNote(""); onStreak&&onStreak(); }
+  }
+
+  const selDate=dates[selIdx<0?0:selIdx];
+  return <div className="m-today">
+    <div className="m-sec m-colA">
+      <div className="m-row">
+        <div className="m-date">{selISO===todayISO?"Today":selDate.toLocaleDateString("en-GB",{weekday:"long"})}, {selDate.toLocaleDateString("en-GB",{day:"numeric",month:"short"})}</div>
+      </div>
+      <div className="m-week" role="tablist" aria-label="This week">
+        {dates.map((d,i)=>{
+          const iso=localISO(d); const a=ACTIVITIES.find(x=>x.id===(weekPlan[DAYS[i]]||"rest"))||ACTIVITIES[0];
+          const k=intensity(a.mult);
+          return <button key={iso} role="tab" aria-selected={iso===selISO} aria-label={`${DAYS[i]}: ${a.name}`}
+            className={`m-day ${iso===selISO?"sel":""} ${iso===todayISO?"today":""}`} onClick={()=>setSelISO(iso)}>
+            <div className="m-dot" style={{background:`rgba(94,196,49,${0.08+k*0.62})`,color:k>0.55?M.greenInk:M.text}}>
+              <Icon name={activityIcon(a.id)} size={18}/>
+            </div>
+            <div className="m-dlabel">{DAYS[i][0]}</div>
+            <div className="m-dnum">{d.getDate()}</div>
+          </button>;
+        })}
+      </div>
+
+      <div className="m-fuel">
+        <div className="m-act"><Icon name={activityIcon(act.id)} size={16}/>{act.name}</div>
+        {t ? <>
+          <div style={{marginTop:10}}><span className="m-kcal">{t.calories.toLocaleString()}</span><span className="m-unit">kcal</span></div>
+          <div className="m-macros">
+            <div className="m-macro"><b>{t.protein}g</b><span>Protein</span></div>
+            <div className="m-macro"><b>{t.carbs}g</b><span>Carbs</span></div>
+            <div className="m-macro"><b>{t.fats}g</b><span>Fat</span></div>
+            <div className="m-macro"><b>{t.hydration}L</b><span>Water</span></div>
+          </div>
+        </> : <div style={{color:M.muted,marginTop:10,fontSize:"0.92rem"}}>Your fuel targets appear here once your assessment is complete.</div>}
+      </div>
+    </div>
+
+    <div className="m-sec m-colB">
+      <div className="m-h2">Your daily Rx</div>
+      {!hasRoutine && !t ? null : allKeys.length>0 && <div style={{marginBottom:16}}>
+        <div className="m-row" style={{fontSize:"0.85rem",color:M.muted}}><span>{doneCount} of {allKeys.length} done</span>{isFuture&&<span>Ticks open on the day</span>}</div>
+        <div className="m-progress"><div style={{width:`${allKeys.length?doneCount/allKeys.length*100:0}%`}}/></div>
+      </div>}
+      {groups.map(g=><div className="m-group" key={g.key}>
+        <div className="m-glabel"><Icon name={g.icon} size={16}/>{g.label}</div>
+        {g.items.map(item=>{ const k=`${g.key}:${item}`; const on=done.includes(k);
+          return <button key={k} className={`m-item ${on?"done":""}`} onClick={()=>toggle(k)} disabled={!canWrite||isFuture} aria-pressed={on}>
+            <span className="m-check">{on&&<Icon name="check" size={14} sw={3}/>}</span>
+            <span className="m-itext">{item}</span>
+          </button>; })}
+      </div>)}
+      {!hasRoutine && <div className="m-empty">
+        <div style={{color:M.green,display:"flex",justifyContent:"center"}}><Icon name="clipboard" size={48} sw={1.4}/></div>
+        <h3>Your routine is on its way</h3>
+        <div>{COACH.name.split(" ")[0]} hasn't set your daily routine yet. Expecting one? <button className="m-link" onClick={goChat}>Send a message</button></div>
+      </div>}
+      <div className="m-note" role="status">{note}</div>
+    </div>
+  </div>;
+}
+
+function ChatScreen({me,myId,otherEmail}){
+  const [messages,setMessages]=useState([]);
+  const [draft,setDraft]=useState("");
+  const [sending,setSending]=useState(false);
+  const [err,setErr]=useState("");
+  const bottomRef=useRef(null);
+
+  useEffect(()=>{
+    if(!me||!otherEmail) return;
+    load();
+    const ch=supabase.channel("mchat_"+me)
+      .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},p=>{
+        const m=p.new;
+        if(m.sender_email===otherEmail&&m.receiver_email===me) setMessages(prev=>[...prev,m]);
+      }).subscribe();
+    return ()=>supabase.removeChannel(ch);
+  },[me,otherEmail]);
+  useEffect(()=>{ bottomRef.current?.scrollIntoView({behavior:"smooth",block:"end"}); },[messages]);
+
+  async function load(){
+    const {data}=await supabase.from("messages").select("*")
+      .or(`and(sender_email.eq.${me},receiver_email.eq.${otherEmail}),and(sender_email.eq.${otherEmail},receiver_email.eq.${me})`)
+      .order("created_at",{ascending:true});
+    if(data) setMessages(data);
+  }
+  async function send(){
+    const text=draft.trim(); if(!text) return;
+    setSending(true); setErr("");
+    const msg={sender_id:myId,sender_email:me,receiver_email:otherEmail,message:text,created_at:new Date().toISOString(),read:false};
+    setMessages(p=>[...p,msg]); setDraft("");
+    const {error}=await supabase.from("messages").insert(msg);
+    if(error){ setErr("Message not sent. Check your connection and try again."); setMessages(p=>p.filter(x=>x!==msg)); setDraft(text); }
+    setSending(false);
+  }
+
+  return <div className="m-chat">
+    <div className="m-head">
+      <img className="m-avatar" src={COACH.photo} alt=""/>
+      <div><div className="m-hi" style={{fontSize:"1.5rem"}}>{COACH.name}</div><div className="m-tag" style={{fontStyle:"normal"}}>Your nutrition coach</div></div>
+    </div>
+    <div className="m-msgs">
+      {messages.length===0 && <div className="m-empty">
+        <div style={{color:M.green,display:"flex",justifyContent:"center"}}><Icon name="chat" size={48} sw={1.4}/></div>
+        <h3>Message {COACH.name.split(" ")[0]}</h3>
+        <div>Questions about your plan, a tricky day, or a win to share. Send it here.</div>
+      </div>}
+      {messages.map((m,i)=>{ const mine=m.sender_email===me;
+        return <div key={m.id||i} style={{display:"flex",flexDirection:"column"}}>
+          <div className={`m-bub ${mine?"mine":"theirs"}`}>{m.message}</div>
+          <div className={`m-time ${mine?"mine":""}`}>{fmtTime(m.created_at)}</div>
+        </div>; })}
+      {err&&<div className="m-note" role="alert" style={{color:M.amber}}>{err}</div>}
+      <div ref={bottomRef}/>
+    </div>
+    <div className="m-compose">
+      <input className="m-input" placeholder="Type a message" value={draft} aria-label="Message"
+        onChange={e=>setDraft(e.target.value)} onKeyDown={e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); send(); } }}/>
+      <button className="m-send" onClick={send} disabled={sending||!draft.trim()} aria-label="Send"><Icon name="send" size={20}/></button>
+    </div>
+  </div>;
+}
+
+function WeekEditor({profile,weekPlan,setDay,status,onBack}){
+  return <div className="m-sec">
+    <button className="m-back" onClick={onBack}><Icon name="back" size={18}/>Profile</button>
+    <div className="m-title" style={{margin:"14px 0 6px"}}>My week</div>
+    <div style={{color:M.muted,fontSize:"0.92rem",marginBottom:14}}>Set what you're doing each day. Your fuel targets update to match.</div>
+    {DAYS.map(day=>{ const a=ACTIVITIES.find(x=>x.id===(weekPlan[day]||"rest"))||ACTIVITIES[0];
+      const t=profile?.weight?calcTargets(profile,a.mult||1.2):null;
+      return <div className="m-wrow" key={day}>
+        <div className="m-wday">{day}</div>
+        <select className="m-select" value={a.id} onChange={e=>setDay(day,e.target.value)} aria-label={`Activity for ${day}`}>
+          {ACTIVITIES.filter(x=>x.id!=="custom").map(x=><option key={x.id} value={x.id}>{x.name}</option>)}
+        </select>
+        <div className="m-wk">{t?<><b>{t.calories.toLocaleString()}</b>kcal</>:"—"}</div>
+      </div>; })}
+    <div className="m-note" role="status">{status}</div>
+  </div>;
+}
+
+function AssessmentSummary({data,onBack}){
+  const lbm=data?.weight&&data?.bodyFatPct?Math.round(data.weight*(1-data.bodyFatPct/100)):null;
+  const stats=[["Age",data?.age&&`${data.age}`],["Height",data?.height&&`${data.height}cm`],["Weight",data?.weight&&`${data.weight}kg`],["Body fat",data?.bodyFatPct&&`${data.bodyFatPct}%`],["Lean mass",lbm&&`${lbm}kg`],["Sex",data?.sex]];
+  return <div className="m-sec">
+    <button className="m-back" onClick={onBack}><Icon name="back" size={18}/>Profile</button>
+    <div className="m-title" style={{margin:"14px 0 14px"}}>My assessment</div>
+    {data ? <>
+      <div className="m-grid3">{stats.map(([l,v])=><div className="m-stat" key={l}><b>{v||"—"}</b><span>{l}</span></div>)}</div>
+      {data.goal&&<div className="m-card" style={{marginTop:10,display:"block"}}><div className="m-sub" style={{marginTop:0}}>Goal</div><div className="m-name">{data.goal}</div></div>}
+      <div style={{color:M.muted,fontSize:"0.88rem",marginTop:14}}>Something changed? Message {COACH.name.split(" ")[0]} and your plan will be updated.</div>
+    </> : <div className="m-empty">No assessment on file yet.</div>}
+  </div>;
+}
+
+function ProfileScreen({user,firstName,streak,weekDone,openPage}){
+  const name=firstName||user?.email?.split("@")[0];
+  return <div>
+    <div className="m-head" style={{justifyContent:"space-between"}}><div className="m-title">Profile</div></div>
+    <div className="m-sec" style={{display:"flex",flexDirection:"column",gap:16}}>
+      <div className="m-card">
+        <div className="m-ini">{(name?.[0]||"?").toUpperCase()}</div>
+        <div style={{minWidth:0}}><div className="m-name">{name}</div><div className="m-sub">{user?.email}</div></div>
+      </div>
+      <div className="m-card">
+        <img className="m-avatar" src={COACH.photo} alt=""/>
+        <div><div className="m-sub" style={{marginTop:0}}>Your coach</div><div className="m-name">{COACH.name}</div></div>
+      </div>
+      <div className="m-tiles">
+        <div className="m-tile"><b><span style={{color:M.amber,display:"flex"}}><Icon name="flame" size={26}/></span>{streak}</b><span>Day streak</span></div>
+        <div className="m-tile"><b><span style={{color:M.green,display:"flex"}}><Icon name="check" size={26} sw={2.4}/></span>{weekDone}/7</b><span>Days complete this week</span></div>
+      </div>
+      <div className="m-list">
+        <button className="m-li" onClick={()=>openPage("week")}><span className="m-lic"><Icon name="calendar"/></span><span style={{flex:1}}>My week</span><Icon name="chevron" size={18}/></button>
+        <button className="m-li" onClick={()=>openPage("assessment")}><span className="m-lic"><Icon name="clipboard"/></span><span style={{flex:1}}>My assessment</span><Icon name="chevron" size={18}/></button>
+        <button className="m-li" onClick={signOut}><span className="m-lic"><Icon name="logout"/></span><span style={{flex:1}}>Sign out</span></button>
+      </div>
+    </div>
+  </div>;
+}
+
+function ClientApp({user,assessmentData,embedded=false}){
+  const email=user?.email;
+  const [tab,setTab]=useState("today");
+  const [page,setPage]=useState(null);
+  const [weekPlan,setWeekPlan]=useState(DEFAULT_WEEK);
+  const [routine,setRoutine]=useState(null);
+  const [streak,setStreak]=useState(0);
+  const [weekDone,setWeekDone]=useState(0);
+  const [weekStatus,setWeekStatus]=useState("");
+  const firstName=assessmentData?.firstName||email?.split("@")[0]||"";
+  const profile=assessmentData?{weight:parseFloat(assessmentData.weight)||0,height:parseFloat(assessmentData.height)||0,age:parseFloat(assessmentData.age)||0,sex:assessmentData.sex||"male",bodyFatPct:parseFloat(assessmentData.bodyFatPct)||20,goal:assessmentData.goal||""}:null;
+
+  useEffect(()=>{ if(!email) return; loadAll(); },[email]);
+
+  async function loadAll(){
+    const [w,r]=await Promise.all([
+      supabase.from("week_plans").select("plan").eq("client_email",email).maybeSingle(),
+      supabase.from("routines").select("*").eq("client_email",email).maybeSingle(),
+    ]);
+    setWeekPlan(w.data?.plan?{...DEFAULT_WEEK,...w.data.plan}:DEFAULT_WEEK);
+    setRoutine(r.data||null);
+    loadStreak();
+  }
+
+  async function loadStreak(){
+    const since=new Date(); since.setDate(since.getDate()-90);
+    const {data}=await supabase.from("daily_logs").select("log_date").eq("client_email",email).eq("complete",true).gte("log_date",localISO(since));
+    const set=new Set((data||[]).map(r=>r.log_date));
+    const d=new Date(); if(!set.has(localISO(d))) d.setDate(d.getDate()-1);
+    let n=0; while(set.has(localISO(d))){ n++; d.setDate(d.getDate()-1); }
+    setStreak(n);
+    setWeekDone(weekDates().filter(x=>set.has(localISO(x))).length);
+  }
+
+  async function setDay(day,actId){
+    const next={...weekPlan,[day]:actId};
+    setWeekPlan(next); setWeekStatus("Saving…");
+    const {error}=await supabase.from("week_plans").upsert({client_email:email,plan:next,updated_at:new Date().toISOString()});
+    setWeekStatus(error?"That change didn't save. Check your connection and try again.":"Saved");
+    if(!error) setTimeout(()=>setWeekStatus(""),1500);
+  }
+
+  function go(t){ setTab(t); setPage(null); }
+
+  return <div className={`m-app ${embedded?"embedded":""}`}>
+    <style>{MCSS}</style>
+    <div className={`m-main m-main-${tab}`}>
+    {tab==="today"&&<>
+      <div className="m-head">
+        <img className="m-avatar" src={COACH.photo} alt={COACH.name}/>
+        <div><div className="m-hi">Hi {firstName},</div><div className="m-tag">{COACH.tagline}</div></div>
+        {streak>0&&<div className="m-streak" style={{marginLeft:"auto"}}><Icon name="flame" size={16}/>{streak}</div>}
+      </div>
+      <TodayScreen firstName={firstName} profile={profile} weekPlan={weekPlan} routine={routine} email={email} canWrite={!embedded} onStreak={loadStreak} goChat={()=>go("chat")}/>
+    </>}
+    {tab==="chat"&&<ChatScreen me={email} myId={user?.id} otherEmail={MANAGER_EMAIL}/>}
+    {tab==="profile"&&(page==="week"
+      ?<WeekEditor profile={profile} weekPlan={weekPlan} setDay={setDay} status={weekStatus} onBack={()=>setPage(null)}/>
+      :page==="assessment"
+      ?<AssessmentSummary data={assessmentData} onBack={()=>setPage(null)}/>
+      :<ProfileScreen user={user} firstName={firstName} streak={streak} weekDone={weekDone} openPage={setPage}/>)}
+    </div>
+    <nav className="m-nav" aria-label="Main">
+      <div className="m-brand"><span className="m-brandmark">TS</span><span>Tom Saunders<br/><em>Nutrition</em></span></div>
+      {[["today","Today","home"],["chat","Chat","chat"],["profile","Profile","user"]].map(([id,l,ic])=>(
+        <button key={id} className={`m-tab ${tab===id?"on":""}`} onClick={()=>go(id)} aria-current={tab===id?"page":undefined}><Icon name={ic} size={22}/>{l}</button>
+      ))}
+    </nav>
   </div>;
 }
 
@@ -1055,6 +1527,7 @@ export default function App(){
   const [view,setView]=useState("dashboard");
   const [assessmentData,setAssessmentData]=useState(null);
   const [needsAssessment,setNeedsAssessment]=useState(false);
+  const [checked,setChecked]=useState(false);
   const isManager=session?.user?.email===MANAGER_EMAIL;
 
   useEffect(()=>{
@@ -1063,6 +1536,7 @@ export default function App(){
         .then(({data})=>{
           if(data){setAssessmentData(data.data);setNeedsAssessment(false);}
           else{setNeedsAssessment(true);}
+          setChecked(true);
         });
     }
   },[session]);
@@ -1070,9 +1544,12 @@ export default function App(){
   if(loading) return <><style>{G}</style><div className="loading-wrap"><div className="spinner"/><div style={{color:B.grey,fontSize:"0.85rem"}}>Loading...</div></div></>;
   if(!session) return <><style>{G}</style><LoginPage/></>;
 
+  if(!isManager&&!checked) return <><style>{G}</style><div className="loading-wrap"><div className="spinner"/></div></>;
+  if(!isManager&&!needsAssessment) return <><style>{G}</style><ClientApp user={session.user} assessmentData={assessmentData}/></>;
+
   const initials=isManager?"TS":(session.user.email[0].toUpperCase());
-  const clientLinks=[["📊","Dashboard","dashboard"],["📊","My Targets","targets"],["💬","Messages","messages"],["📈","Progress","progress"]];
-  const managerLinks=[["👥","All Clients","dashboard"],["📊","Analytics","analytics"],["💬","Messages","messages"],["⚙️","Settings","settings"]];
+  const clientLinks=[["","Dashboard","dashboard"],["","My Targets","targets"],["","Messages","messages"],["","Progress","progress"]];
+  const managerLinks=[["","All Clients","dashboard"],["","Analytics","analytics"],["","Messages","messages"],["","Settings","settings"]];
   const links=isManager?managerLinks:clientLinks;
 
   return <div className="app">
@@ -1113,7 +1590,7 @@ export default function App(){
         {!isManager&&!needsAssessment&&view==="messages"&&<>
           <div className="ph">My <em>Messages</em></div>
           <div className="psub">Direct messages with Tom Saunders</div>
-          <div className="card"><div className="card-hd">💬 Messages from Tom</div><Messaging myEmail={session.user.email} otherEmail={MANAGER_EMAIL} myId={session.user.id}/></div>
+          <div className="card"><div className="card-hd"> Messages from Tom</div><Messaging myEmail={session.user.email} otherEmail={MANAGER_EMAIL} myId={session.user.id}/></div>
         </>}
         {isManager&&view==="dashboard"&&<>
           <div className="ph"><em>TS Nutrition</em> — Client Management</div>
@@ -1122,11 +1599,11 @@ export default function App(){
         </>}
         {isManager&&view==="preview"&&<>
           <div className="ph">Client <em>Preview</em></div>
-          <div className="psub">This is what a client sees when logged in</div>
-          <ClientDash user={session.user} assessmentData={assessmentData}/>
+          <div className="psub">This is the client app layout. Ticking is switched off in preview.</div>
+          <div style={{maxWidth:420}}><ClientApp user={session.user} assessmentData={null} embedded/></div>
         </>}
         {!["dashboard","preview","messages","targets"].includes(view)&&!needsAssessment&&<div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"60vh",flexDirection:"column",gap:"1rem",color:B.grey}}>
-          <div style={{fontSize:"3rem"}}>🚧</div>
+          <div style={{fontSize:"3rem"}}></div>
           <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"1.2rem",fontWeight:700,color:B.greyLt,textTransform:"uppercase"}}>Coming Soon</div>
           <div style={{fontSize:"0.85rem"}}>This section is being built step by step.</div>
         </div>}
