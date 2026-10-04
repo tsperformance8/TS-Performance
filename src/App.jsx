@@ -150,6 +150,19 @@ select.inp option{background:${B.dark}}
   .content2{padding:24px 16px}
 }
 
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;padding:20px;z-index:500}
+.modal{background:${B.card};border:1px solid ${B.border};border-radius:16px;padding:28px;width:100%;max-width:540px;max-height:90vh;overflow:auto}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.02em;color:${B.white};line-height:1}
+.btn-danger{background:${B.alert};color:#fff}.btn-danger:hover:not(:disabled){background:#C83E3E}
+.btn:disabled{opacity:0.45;cursor:default}
+input.inp,select.inp{height:44px}
+.invite-note{display:flex;align-items:center;gap:16px;background:rgba(242,169,59,0.08);border:1px solid rgba(242,169,59,0.25);border-radius:12px;padding:14px 16px;margin-bottom:1.25rem;font-size:0.88rem;color:${B.grey};line-height:1.45}
+.invite-box{background:#242424;border:1px solid ${B.border};border-radius:10px;padding:14px;font-size:0.9rem;line-height:1.5;color:${B.text}}
+
+.dgrid2{display:grid;grid-template-columns:1fr 1fr;gap:0 0.75rem}
+.dgrid3{display:grid;grid-template-columns:repeat(3,1fr);gap:0 0.75rem}
+@media (max-width:420px){.dgrid3{grid-template-columns:1fr 1fr}}
+
 /* ACTIVITY DAY SELECTOR */
 .act-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.65rem}
 .act-card{background:${B.darker};border:2px solid ${B.border};border-radius:10px;padding:0.85rem;cursor:pointer;transition:all 0.2s;text-align:center}
@@ -294,6 +307,8 @@ function Badge({status}){
   if(status==="on-track") return <span className="badge badge-green">● On Track</span>;
   if(status==="needs-attention") return <span className="badge badge-amber">● Attention</span>;
   if(status==="new") return <span className="badge badge-blue">● New</span>;
+  if(status==="active") return <span className="badge badge-green">● Active</span>;
+  if(status==="invited") return <span className="badge badge-amber">● Invited</span>;
   return <span className="badge badge-red">● Off Track</span>;
 }
 function fmtTime(ts){
@@ -954,27 +969,42 @@ function ManagerDash({managerUser}){
 
   useEffect(()=>{ loadClients(); },[]);
 
-  async function loadClients(){
-    const {data}=await supabase.from("assessments").select("*").order("completed_at",{ascending:false});
-    if(data) setDbClients(data);
+  const [clientRows,setClientRows]=useState([]);
+  const [showAdd,setShowAdd]=useState(false);
+  const [toDelete,setToDelete]=useState(null);
+  const [toEdit,setToEdit]=useState(null);
+
+  async function loadClients(selectEmail){
+    const [a,c]=await Promise.all([
+      supabase.from("assessments").select("*").order("completed_at",{ascending:false}),
+      supabase.from("clients").select("*").order("created_at",{ascending:false}),
+    ]);
+    if(a.data) setDbClients(a.data);
+    if(c.data) setClientRows(c.data);
+    if(selectEmail!==undefined) setSel(selectEmail?{email:selectEmail}:null);
   }
 
-  const realClients=dbClients.map((a,i)=>({
-    id:"db_"+i,
-    name:`${a.data?.firstName||""} ${a.data?.lastName||""}`.trim()||a.email,
-    ini:((a.data?.firstName?.[0]||a.email?.[0]||"?").toUpperCase())+((a.data?.lastName?.[0]||"").toUpperCase()),
-    col:"#2F6A1A",goal:a.data?.goal||"Assessment Complete",
-    status:"new",assessed:true,assessmentData:a.data,email:a.email,
-    weight:a.data?.weight,conditions:[a.data?.conditions||"None"],tags:a.data?.dietPrefs||[]
-  }));
-
-  const DEMO=[
-    {id:"d1",name:"Sarah Mitchell",ini:"SM",col:"#4A90D9",goal:"Gradual fat loss (0.25kg/week)",status:"on-track",assessed:true,email:"sarah@demo.com",weight:68,assessmentData:{weight:68,height:165,age:32,sex:"female",bodyFatPct:28,goal:"Gradual fat loss (0.25kg/week)"}},
-    {id:"d2",name:"James O'Brien",ini:"JO",col:"#D4A020",goal:"Body recomposition",status:"needs-attention",assessed:true,email:"james@demo.com",weight:84,assessmentData:{weight:84,height:180,age:28,sex:"male",bodyFatPct:22,goal:"Body recomposition"}},
-  ];
-
-  const allClients=[...realClients,...DEMO];
-  const currentSel=sel||allClients[0];
+  // Merge manager-added clients with clients who have signed up and completed an assessment
+  const byEmail={};
+  clientRows.forEach(r=>{ byEmail[r.email.toLowerCase()]={row:r,assess:null}; });
+  dbClients.forEach(a=>{ const k=(a.email||"").toLowerCase(); if(!k) return; byEmail[k]=byEmail[k]||{row:null,assess:null}; byEmail[k].assess=a; });
+  const allClients=Object.entries(byEmail).map(([email,{row,assess}])=>{
+    const d=assess?.data||row?.data||null;
+    const first=row?.first_name||assess?.data?.firstName||"";
+    const last=row?.last_name||assess?.data?.lastName||"";
+    const hasStats=!!(d&&d.weight);
+    return {
+      id:email, email, row, assess,
+      name:`${first} ${last}`.trim()||email,
+      ini:((first[0]||email[0]||"?")+(last[0]||"")).toUpperCase(),
+      col:"#2F6A1A",
+      goal:d?.goal||(assess?"Assessment complete":"Awaiting sign-up"),
+      status:assess?"active":"invited",
+      assessed:hasStats, assessmentData:hasStats?d:null,
+    };
+  });
+  const currentSel=(sel&&allClients.find(c=>c.email===sel.email?.toLowerCase()))||allClients[0]||null;
+  const activeCount=allClients.filter(c=>c.status==="active").length;
 
   const profile = currentSel?.assessmentData ? {
     weight: parseFloat(currentSel.assessmentData.weight)||0,
@@ -986,36 +1016,50 @@ function ManagerDash({managerUser}){
   } : null;
 
   return <div>
-    <div className="g4" style={{marginBottom:"1.1rem"}}>
-      <div style={{background:B.card,border:`1px solid ${B.border}`,borderLeft:`3px solid ${B.green}`,borderRadius:12,padding:"1.1rem 1.25rem"}}><div style={{fontSize:"0.68rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.grey,marginBottom:"0.4rem"}}>Total Clients</div><div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"2.1rem",fontWeight:700,color:B.white,lineHeight:1}}>{allClients.length}</div></div>
-      <div style={{background:B.card,border:`1px solid ${B.border}`,borderLeft:`3px solid ${B.green}`,borderRadius:12,padding:"1.1rem 1.25rem"}}><div style={{fontSize:"0.68rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.grey,marginBottom:"0.4rem"}}>Real Signups</div><div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"2.1rem",fontWeight:700,color:B.white,lineHeight:1}}>{realClients.length}</div></div>
-      <div style={{background:B.card,border:`1px solid ${B.border}`,borderLeft:`3px solid ${B.amber}`,borderRadius:12,padding:"1.1rem 1.25rem"}}><div style={{fontSize:"0.68rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.grey,marginBottom:"0.4rem"}}>Demo Clients</div><div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"2.1rem",fontWeight:700,color:B.white,lineHeight:1}}>{DEMO.length}</div></div>
-      <div style={{background:B.card,border:`1px solid ${B.border}`,borderLeft:`3px solid ${B.alert}`,borderRadius:12,padding:"1.1rem 1.25rem"}}><div style={{fontSize:"0.68rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.grey,marginBottom:"0.4rem"}}>Need Attention</div><div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"2.1rem",fontWeight:700,color:B.alert,lineHeight:1}}>{DEMO.filter(c=>c.status==="needs-attention").length}</div></div>
+    <div className="g3" style={{marginBottom:"1.1rem"}}>
+      {[["Total clients",allClients.length,B.green],["Signed up",activeCount,B.green],["Awaiting sign-up",allClients.length-activeCount,B.amber]].map(([l,v,c])=>(
+        <div key={l} style={{background:B.card,border:`1px solid ${B.border}`,borderLeft:`3px solid ${c}`,borderRadius:12,padding:"1.1rem 1.25rem"}}>
+          <div style={{fontSize:"0.68rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.grey,marginBottom:"0.4rem"}}>{l}</div>
+          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"2.2rem",lineHeight:1,color:B.white}}>{v}</div>
+        </div>
+      ))}
     </div>
 
     <div style={{display:"grid",gridTemplateColumns:"minmax(300px,340px) 1fr",alignItems:"start",gap:"1.1rem"}}>
       <div className="card" style={{padding:"1rem"}}>
-        {realClients.length>0&&<div style={{fontSize:"0.65rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.green,padding:"0.3rem 0.5rem 0.6rem"}}>Real Clients</div>}
-        <div className="scroll mh400">
+        <button className="btn btn-g btn-full" style={{marginBottom:"0.85rem",display:"flex",alignItems:"center",justifyContent:"center",gap:8}} onClick={()=>setShowAdd(true)}>
+          <Icon name="plus" size={18} sw={2.2}/>Add client
+        </button>
+        <div className="scroll" style={{maxHeight:"60vh"}}>
+          {allClients.length===0&&<div style={{color:B.grey,fontSize:"0.9rem",padding:"1rem 0.5rem",textAlign:"center"}}>No clients yet. Add your first client to set up their account.</div>}
           {allClients.map(c=>(
-            <div key={c.id} className={`crow ${currentSel?.id===c.id?"sel":""}`} onClick={()=>{setSel(c);setTab("assessment");}}>
+            <div key={c.id} role="button" tabIndex={0} className={`crow ${currentSel?.id===c.id?"sel":""}`}
+              onClick={()=>{setSel(c);setTab("assessment");}} onKeyDown={e=>{if(e.key==="Enter"){setSel(c);setTab("assessment");}}}>
               <div className="cav" style={{background:c.col}}>{c.ini}</div>
-              <div style={{flex:1}}><div className="cname">{c.name}</div><div className="cmeta">{c.goal}</div></div>
+              <div style={{flex:1,minWidth:0}}><div className="cname">{c.name}</div><div className="cmeta" style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.goal}</div></div>
               <Badge status={c.status}/>
             </div>
           ))}
         </div>
       </div>
 
+      {!currentSel&&<div className="card" style={{textAlign:"center",padding:"3rem",color:B.grey}}>Select or add a client to get started.</div>}
       {currentSel&&<div className="card">
         <div className="fg" style={{marginBottom:"1.25rem",gap:"0.75rem"}}>
           <div className="cav" style={{background:currentSel.col,width:50,height:50}}>{currentSel.ini}</div>
-          <div style={{flex:1}}>
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"1.2rem",fontWeight:700,color:B.white,textTransform:"uppercase"}}>{currentSel.name}</div>
-            <div style={{fontSize:"0.78rem",color:B.grey}}>{currentSel.goal}{currentSel.email?` · ${currentSel.email}`:""}</div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"1.6rem",letterSpacing:"0.02em",color:B.white,lineHeight:1.1}}>{currentSel.name}</div>
+            <div style={{fontSize:"0.82rem",color:B.grey}}>{currentSel.email}</div>
           </div>
           <Badge status={currentSel.status}/>
+          <button className="btn btn-ghost btn-sm" style={{display:"flex",alignItems:"center",gap:6}} onClick={()=>setToEdit(currentSel)} aria-label={`Edit ${currentSel.name}`}>
+            <Icon name="edit" size={16}/>Edit
+          </button>
+          <button className="btn btn-ghost btn-sm" style={{display:"flex",alignItems:"center",gap:6}} onClick={()=>setToDelete(currentSel)} aria-label={`Delete ${currentSel.name}`}>
+            <Icon name="trash" size={16}/>Delete
+          </button>
         </div>
+        {currentSel.status==="invited"&&<InviteNote client={currentSel}/>}
 
         <div style={{display:"flex",gap:"0.25rem",background:B.darker,borderRadius:"8px",padding:"0.3rem",border:`1px solid ${B.border}`,marginBottom:"1.25rem",flexWrap:"wrap"}}>
           {["assessment","targets","routines","meal plan","messages","progress"].map(t=>(
@@ -1057,9 +1101,9 @@ function ManagerDash({managerUser}){
 
         {tab==="messages"&&<div>
           <div className="card-hd"> Messages with {currentSel.name}</div>
-          {currentSel.email&&!currentSel.email.includes("demo")
+          {currentSel.email
             ?<Messaging myEmail={managerUser.email} otherEmail={currentSel.email} myId={managerUser.id}/>
-            :<div style={{color:B.grey,fontSize:"0.85rem",padding:"1rem 0"}}>Messaging only available for real clients.</div>
+            :<div style={{color:B.grey,fontSize:"0.85rem",padding:"1rem 0"}}>No email on file for this client.</div>
           }
         </div>}
 
@@ -1069,7 +1113,234 @@ function ManagerDash({managerUser}){
         </div>}
       </div>}
     </div>
+    {showAdd&&<AddClientModal existing={allClients.map(c=>c.email)} onClose={()=>setShowAdd(false)} onAdded={email=>{loadClients(email);}}/>}
+    {toEdit&&<EditClientModal client={toEdit} onClose={()=>setToEdit(null)} onSaved={email=>{setToEdit(null);loadClients(email);}}/>}
+    {toDelete&&<DeleteClientModal client={toDelete} onClose={()=>setToDelete(null)} onDeleted={()=>{setToDelete(null);loadClients(null);}}/>}
   </div>;
+}
+
+/* ─── ADD / DELETE CLIENTS ───────────────────────────────────────────────── */
+const SITE_URL = typeof window!=="undefined" ? window.location.origin : "https://ts-performance.vercel.app";
+
+function inviteText(first,email){
+  return `Hi ${first||"there"}, your Tom Saunders Nutrition account is ready. Create your login at ${SITE_URL} using this email address: ${email}. You'll start with a short assessment, then your plan will be waiting for you.`;
+}
+
+function CopyButton({text,label="Copy invite message"}){
+  const [done,setDone]=useState(false);
+  async function copy(){
+    try{ await navigator.clipboard.writeText(text); setDone(true); setTimeout(()=>setDone(false),2000); }
+    catch{ window.prompt("Copy this message:",text); }
+  }
+  return <button className="btn btn-ghost btn-sm" style={{display:"inline-flex",alignItems:"center",gap:6}} onClick={copy}>
+    <Icon name={done?"check":"copy"} size={16}/>{done?"Copied":label}
+  </button>;
+}
+
+function Modal({title,onClose,children}){
+  useEffect(()=>{
+    const k=e=>{ if(e.key==="Escape") onClose(); };
+    window.addEventListener("keydown",k); return ()=>window.removeEventListener("keydown",k);
+  },[onClose]);
+  return <div className="modal-bg" onMouseDown={e=>{ if(e.target===e.currentTarget) onClose(); }}>
+    <div className="modal" role="dialog" aria-modal="true" aria-label={title}>
+      <div className="fb" style={{marginBottom:"1.25rem"}}>
+        <div className="modal-title">{title}</div>
+        <button className="btn btn-ghost btn-sm" onClick={onClose} aria-label="Close" style={{display:"flex",padding:"0.4rem"}}><Icon name="close" size={18}/></button>
+      </div>
+      {children}
+    </div>
+  </div>;
+}
+
+function InviteNote({client}){
+  const first=client.row?.first_name||client.name.split(" ")[0];
+  return <div className="invite-note">
+    <div style={{flex:1}}>
+      <div style={{fontWeight:700,color:B.white,marginBottom:2}}>Not signed up yet</div>
+      <div>Anything you set up now (targets, routines, messages) will be waiting when {first} creates a login with <strong style={{color:B.greyLt}}>{client.email}</strong>.</div>
+    </div>
+    <CopyButton text={inviteText(first,client.email)}/>
+  </div>;
+}
+
+function AddClientModal({existing,onClose,onAdded}){
+  const [f,setF]=useState({first:"",last:"",email:"",sex:"",age:"",height:"",weight:"",bodyFatPct:"",goal:""});
+  const [more,setMore]=useState(false);
+  const [err,setErr]=useState("");
+  const [saving,setSaving]=useState(false);
+  const [added,setAdded]=useState(null);
+  const set=k=>e=>setF(p=>({...p,[k]:e.target.value}));
+
+  async function save(){
+    setErr("");
+    const email=f.email.trim().toLowerCase();
+    if(!f.first.trim()) return setErr("Add the client's first name.");
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setErr("That email address doesn't look right. Check it and try again.");
+    if(existing.includes(email)) return setErr("A client with this email is already on your list.");
+    const stats={sex:f.sex,age:f.age,height:f.height,weight:f.weight,bodyFatPct:f.bodyFatPct,goal:f.goal};
+    const hasAny=Object.values(stats).some(v=>String(v).trim());
+    setSaving(true);
+    const {error}=await supabase.from("clients").insert({
+      email, first_name:f.first.trim(), last_name:f.last.trim()||null,
+      data: hasAny ? {...stats, firstName:f.first.trim(), lastName:f.last.trim()} : null,
+    });
+    setSaving(false);
+    if(error) return setErr(error.code==="23505"?"A client with this email is already on your list.":"Couldn't add the client. Check your connection and try again.");
+    setAdded({first:f.first.trim(),email});
+    onAdded(email);
+  }
+
+  if(added) return <Modal title="Client added" onClose={onClose}>
+    <p style={{color:B.greyLt,marginBottom:"1rem",lineHeight:1.5}}>{added.first}'s account is ready for you to set up. When you're ready, send them this message so they can create their login:</p>
+    <div className="invite-box">{inviteText(added.first,added.email)}</div>
+    <div className="fg" style={{justifyContent:"flex-end",marginTop:"1.25rem"}}>
+      <CopyButton text={inviteText(added.first,added.email)}/>
+      <button className="btn btn-g btn-sm" onClick={onClose}>Done</button>
+    </div>
+  </Modal>;
+
+  return <Modal title="Add client" onClose={onClose}>
+    {err&&<div className="err" role="alert">{err}</div>}
+    <div className="g2" style={{gap:"0.75rem"}}>
+      <div className="inp-group"><label className="inp-label" htmlFor="ac-first">First name</label><input id="ac-first" className="inp" value={f.first} onChange={set("first")} autoFocus/></div>
+      <div className="inp-group"><label className="inp-label" htmlFor="ac-last">Last name</label><input id="ac-last" className="inp" value={f.last} onChange={set("last")}/></div>
+    </div>
+    <div className="inp-group"><label className="inp-label" htmlFor="ac-email">Email address</label><input id="ac-email" className="inp" type="email" value={f.email} onChange={set("email")} placeholder="The email they'll sign up with"/></div>
+
+    <button className="m-link" style={{color:B.green,background:"none",border:"none",font:"inherit",fontSize:"0.9rem",fontWeight:600,cursor:"pointer",padding:0,marginBottom:"1rem"}} onClick={()=>setMore(m=>!m)} aria-expanded={more}>
+      {more?"Hide details":"Add their details now (optional)"}
+    </button>
+    {more&&<div>
+      <div style={{color:B.grey,fontSize:"0.85rem",marginBottom:"0.85rem"}}>Fill these in if you've already measured them, so you can set targets before they sign up.</div>
+      <div className="g3" style={{gap:"0.75rem"}}>
+        <div className="inp-group"><label className="inp-label" htmlFor="ac-sex">Sex</label><select id="ac-sex" className="inp" value={f.sex} onChange={set("sex")}><option value="">—</option><option value="male">Male</option><option value="female">Female</option></select></div>
+        <div className="inp-group"><label className="inp-label" htmlFor="ac-age">Age</label><input id="ac-age" className="inp" type="number" inputMode="numeric" value={f.age} onChange={set("age")}/></div>
+        <div className="inp-group"><label className="inp-label" htmlFor="ac-h">Height (cm)</label><input id="ac-h" className="inp" type="number" inputMode="decimal" value={f.height} onChange={set("height")}/></div>
+        <div className="inp-group"><label className="inp-label" htmlFor="ac-w">Weight (kg)</label><input id="ac-w" className="inp" type="number" inputMode="decimal" value={f.weight} onChange={set("weight")}/></div>
+        <div className="inp-group"><label className="inp-label" htmlFor="ac-bf">Body fat (%)</label><input id="ac-bf" className="inp" type="number" inputMode="decimal" value={f.bodyFatPct} onChange={set("bodyFatPct")}/></div>
+      </div>
+      <div className="inp-group"><label className="inp-label" htmlFor="ac-goal">Goal</label><select id="ac-goal" className="inp" value={f.goal} onChange={set("goal")}><option value="">—</option>{Object.keys(GOAL_ADJUSTMENTS).map(g=><option key={g} value={g}>{g}</option>)}</select></div>
+    </div>}
+
+    <div className="fg" style={{justifyContent:"flex-end",marginTop:"0.5rem"}}>
+      <button className="btn btn-ghost btn-sm" onClick={onClose}>Cancel</button>
+      <button className="btn btn-g btn-sm" onClick={save} disabled={saving}>{saving?"Adding…":"Add client"}</button>
+    </div>
+  </Modal>;
+}
+
+function DeleteClientModal({client,onClose,onDeleted}){
+  const [confirm,setConfirm]=useState("");
+  const [busy,setBusy]=useState(false);
+  const [err,setErr]=useState("");
+  const [done,setDone]=useState(false);
+  const ok=confirm.trim().toLowerCase()==="delete";
+
+  async function run(){
+    setBusy(true); setErr("");
+    const emails=[...new Set([client.email,client.assess?.email,client.row?.email].filter(Boolean))];
+    const failed=[];
+    for(const e of emails){
+      for(const [table,col] of [["daily_logs","client_email"],["week_plans","client_email"],["routines","client_email"],["messages","sender_email"],["messages","receiver_email"],["assessments","email"],["clients","email"]]){
+        const {error}=await supabase.from(table).delete().eq(col,e);
+        if(error) failed.push(table);
+      }
+    }
+    setBusy(false);
+    if(failed.length) setErr(`Some data couldn't be deleted (${[...new Set(failed)].join(", ")}). Nothing is lost by trying again.`);
+    else setDone(true);
+  }
+
+  if(done) return <Modal title="Client deleted" onClose={onDeleted}>
+    <p style={{color:B.greyLt,lineHeight:1.5}}>{client.name} and all of their data have been removed.</p>
+    {client.status==="active"&&<p style={{color:B.grey,lineHeight:1.5,marginTop:"0.75rem",fontSize:"0.9rem"}}>Their login still exists. To remove it completely, open Supabase, go to Authentication → Users, and delete {client.email}.</p>}
+    <div className="fg" style={{justifyContent:"flex-end",marginTop:"1.25rem"}}><button className="btn btn-g btn-sm" onClick={onDeleted}>Done</button></div>
+  </Modal>;
+
+  return <Modal title={`Delete ${client.name}?`} onClose={onClose}>
+    {err&&<div className="err" role="alert">{err}</div>}
+    <p style={{color:B.greyLt,lineHeight:1.5,marginBottom:"0.75rem"}}>This permanently removes their assessment, weekly plan, routines, daily ticks and all messages between you. It can't be undone.</p>
+    <div className="inp-group"><label className="inp-label" htmlFor="del-confirm">Type DELETE to confirm</label><input id="del-confirm" className="inp" value={confirm} onChange={e=>setConfirm(e.target.value)} autoFocus/></div>
+    <div className="fg" style={{justifyContent:"flex-end"}}>
+      <button className="btn btn-ghost btn-sm" onClick={onClose}>Cancel</button>
+      <button className="btn btn-danger btn-sm" onClick={run} disabled={!ok||busy}>{busy?"Deleting…":"Delete client"}</button>
+    </div>
+  </Modal>;
+}
+
+/* ─── EDIT CLIENT DETAILS (manager + client) ─────────────────────────────── */
+const DETAIL_LIMITS={age:[10,100,"Age"],height:[100,230,"Height"],weight:[30,250,"Weight"],bodyFatPct:[3,60,"Body fat"]};
+
+function detailsFrom(d={},row){
+  return {
+    first:row?.first_name||d.firstName||"", last:row?.last_name||d.lastName||"",
+    sex:d.sex||"", age:d.age??"", height:d.height??"", weight:d.weight??"", bodyFatPct:d.bodyFatPct??"", goal:d.goal||"",
+  };
+}
+function checkDetails(f){
+  if(!String(f.first).trim()) return "Add a first name.";
+  for(const [k,[lo,hi,label]] of Object.entries(DETAIL_LIMITS)){
+    const v=String(f[k]).trim(); if(!v) continue;
+    const n=parseFloat(v);
+    if(isNaN(n)||n<lo||n>hi) return `${label} should be between ${lo} and ${hi}.`;
+  }
+  return "";
+}
+function mergeDetails(old,f){
+  return {...(old||{}), firstName:f.first.trim(), lastName:f.last.trim(), sex:f.sex, age:f.age, height:f.height, weight:f.weight, bodyFatPct:f.bodyFatPct, goal:f.goal};
+}
+
+function DetailsFields({f,set,inputCls,labelCls,groupCls,idp}){
+  const field=(k,label,type="text",mode)=><div className={groupCls} key={k}>
+    <label className={labelCls} htmlFor={idp+k}>{label}</label>
+    <input id={idp+k} className={inputCls} type={type} inputMode={mode} value={f[k]} onChange={set(k)}/>
+  </div>;
+  return <>
+    <div className="dgrid2">{field("first","First name")}{field("last","Last name")}</div>
+    <div className="dgrid3">
+      <div className={groupCls}><label className={labelCls} htmlFor={idp+"sex"}>Sex</label>
+        <select id={idp+"sex"} className={inputCls} value={f.sex} onChange={set("sex")}><option value="">—</option><option value="male">Male</option><option value="female">Female</option></select></div>
+      {field("age","Age","number","numeric")}
+      {field("height","Height (cm)","number","decimal")}
+      {field("weight","Weight (kg)","number","decimal")}
+      {field("bodyFatPct","Body fat (%)","number","decimal")}
+    </div>
+    <div className={groupCls}><label className={labelCls} htmlFor={idp+"goal"}>Goal</label>
+      <select id={idp+"goal"} className={inputCls} value={f.goal} onChange={set("goal")}><option value="">—</option>{Object.keys(GOAL_ADJUSTMENTS).map(g=><option key={g} value={g}>{g}</option>)}</select></div>
+  </>;
+}
+
+function EditClientModal({client,onClose,onSaved}){
+  const base=client.assess?.data||client.row?.data||{};
+  const [f,setF]=useState(detailsFrom(base,client.row));
+  const [err,setErr]=useState(""); const [saving,setSaving]=useState(false);
+  const set=k=>e=>setF(p=>({...p,[k]:e.target.value}));
+
+  async function save(){
+    const problem=checkDetails(f); if(problem) return setErr(problem);
+    setSaving(true); setErr("");
+    let error=null;
+    if(client.assess){
+      ({error}=await supabase.from("assessments").update({data:mergeDetails(client.assess.data,f)}).eq("email",client.assess.email));
+    }
+    if(!error&&client.row){
+      ({error}=await supabase.from("clients").update({first_name:f.first.trim(),last_name:f.last.trim()||null,data:client.assess?client.row.data:mergeDetails(client.row.data,f)}).eq("email",client.row.email));
+    }
+    setSaving(false);
+    if(error) return setErr("Couldn't save the changes. Check your connection and try again.");
+    onSaved(client.email);
+  }
+
+  return <Modal title={`Edit ${client.name}`} onClose={onClose}>
+    {err&&<div className="err" role="alert">{err}</div>}
+    <DetailsFields f={f} set={set} inputCls="inp" labelCls="inp-label" groupCls="inp-group" idp="ec-"/>
+    <div style={{color:B.grey,fontSize:"0.82rem",marginBottom:"1rem"}}>Email: {client.email}. Email addresses can't be changed here because they're linked to the client's login.</div>
+    <div className="fg" style={{justifyContent:"flex-end"}}>
+      <button className="btn btn-ghost btn-sm" onClick={onClose}>Cancel</button>
+      <button className="btn btn-g btn-sm" onClick={save} disabled={saving}>{saving?"Saving…":"Save changes"}</button>
+    </div>
+  </Modal>;
 }
 
 /* ─── MOBILE CLIENT APP (v7) ─────────────────────────────────────────────── */
@@ -1161,6 +1432,19 @@ const MCSS = `
 .m-stat{background:${M.card};border-radius:12px;padding:12px;text-align:center}
 .m-stat b{display:block;font-family:'Bebas Neue',sans-serif;font-size:1.5rem;font-weight:400}
 .m-stat span{font-size:0.75rem;color:${M.muted}}
+.m-app *,.m-app *::before,.m-app *::after{box-sizing:border-box}
+.m-app .dgrid2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.m-app .dgrid3{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.m-editbtn{display:inline-flex;align-items:center;gap:6px;background:${M.card};border:1px solid ${M.line};color:${M.text};border-radius:10px;padding:8px 12px;font-family:inherit;font-size:0.9rem;font-weight:600;cursor:pointer}
+.m-form{display:flex;flex-direction:column}
+.m-fgroup{margin-bottom:12px}
+.m-flabel{display:block;font-size:0.8rem;font-weight:600;color:${M.muted};margin-bottom:6px}
+.m-field{width:100%;height:46px;background:${M.card};border:1px solid ${M.line};border-radius:10px;padding:0 12px;color:${M.text};font-family:inherit;font-size:1rem;outline:none}
+.m-field:focus{border-color:${M.green}}
+.m-btn{flex:1;height:48px;border:none;border-radius:12px;background:${M.green};color:${M.greenInk};font-family:inherit;font-size:1rem;font-weight:700;cursor:pointer}
+.m-btn.ghost{background:${M.card};color:${M.text};border:1px solid ${M.line}}
+.m-btn:disabled{opacity:0.5;cursor:default}
+.m-err{background:rgba(224,80,80,0.1);border:1px solid rgba(224,80,80,0.3);color:#F08080;border-radius:10px;padding:10px 12px;font-size:0.9rem;margin-bottom:12px}
 .m-note{font-size:0.82rem;color:${M.muted};margin-top:6px;min-height:1.2em}
 .m-colA{padding-bottom:0}
 .m-colB{padding-top:0}
@@ -1223,6 +1507,11 @@ const ICON_PATHS = {
   phone:"M7 2h10a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zM11 18h2",
   chart:"M4 20V10M10 20V4M16 20v-7M2 20h20",
   sliders:"M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1M15 4v4M9 10v4M17 16v4",
+  plus:"M12 5v14M5 12h14",
+  trash:"M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3",
+  copy:"M9 9h11v11H9zM5 15H4V4h11v1",
+  edit:"M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4",
+  close:"M6 6l12 12M18 6 6 18",
 };
 
 function Icon({name,size=20,sw=1.8}){
@@ -1437,17 +1726,45 @@ function WeekEditor({profile,weekPlan,setDay,status,onBack}){
   </div>;
 }
 
-function AssessmentSummary({data,onBack}){
+function AssessmentSummary({data,userId,onBack,onSaved}){
+  const [editing,setEditing]=useState(false);
+  const [f,setF]=useState(detailsFrom(data||{}));
+  const [err,setErr]=useState(""); const [saving,setSaving]=useState(false); const [note,setNote]=useState("");
+  const set=k=>e=>setF(p=>({...p,[k]:e.target.value}));
   const lbm=data?.weight&&data?.bodyFatPct?Math.round(data.weight*(1-data.bodyFatPct/100)):null;
   const stats=[["Age",data?.age&&`${data.age}`],["Height",data?.height&&`${data.height}cm`],["Weight",data?.weight&&`${data.weight}kg`],["Body fat",data?.bodyFatPct&&`${data.bodyFatPct}%`],["Lean mass",lbm&&`${lbm}kg`],["Sex",data?.sex]];
+
+  async function save(){
+    const problem=checkDetails(f); if(problem) return setErr(problem);
+    setSaving(true); setErr("");
+    const next=mergeDetails(data,f);
+    const {error}=await supabase.from("assessments").update({data:next}).eq("user_id",userId);
+    setSaving(false);
+    if(error) return setErr("Your changes didn't save. Check your connection and try again.");
+    onSaved(next); setEditing(false); setNote("Saved. Your targets have been updated."); setTimeout(()=>setNote(""),2500);
+  }
+
   return <div className="m-sec">
     <button className="m-back" onClick={onBack}><Icon name="back" size={18}/>Profile</button>
-    <div className="m-title" style={{margin:"14px 0 14px"}}>My assessment</div>
-    {data ? <>
+    <div className="m-row" style={{margin:"14px 0 14px"}}>
+      <div className="m-title">My details</div>
+      {data&&!editing&&<button className="m-editbtn" onClick={()=>{setF(detailsFrom(data));setEditing(true);}}><Icon name="edit" size={16}/>Edit</button>}
+    </div>
+    {!data&&<div className="m-empty">No assessment on file yet.</div>}
+    {data&&!editing&&<>
       <div className="m-grid3">{stats.map(([l,v])=><div className="m-stat" key={l}><b>{v||"—"}</b><span>{l}</span></div>)}</div>
       {data.goal&&<div className="m-card" style={{marginTop:10,display:"block"}}><div className="m-sub" style={{marginTop:0}}>Goal</div><div className="m-name">{data.goal}</div></div>}
-      <div style={{color:M.muted,fontSize:"0.88rem",marginTop:14}}>Something changed? Message {COACH.name.split(" ")[0]} and your plan will be updated.</div>
-    </> : <div className="m-empty">No assessment on file yet.</div>}
+      <div className="m-note" role="status" style={{color:M.green}}>{note}</div>
+      <div style={{color:M.muted,fontSize:"0.88rem",marginTop:8}}>Weighed yourself recently or changed your goal? Tap Edit and your targets will update.</div>
+    </>}
+    {data&&editing&&<div className="m-form">
+      {err&&<div className="m-err" role="alert">{err}</div>}
+      <DetailsFields f={f} set={set} inputCls="m-field" labelCls="m-flabel" groupCls="m-fgroup" idp="me-"/>
+      <div className="m-row" style={{marginTop:6,gap:10}}>
+        <button className="m-btn ghost" onClick={()=>{setEditing(false);setErr("");}}>Cancel</button>
+        <button className="m-btn" onClick={save} disabled={saving}>{saving?"Saving…":"Save changes"}</button>
+      </div>
+    </div>}
   </div>;
 }
 
@@ -1470,14 +1787,14 @@ function ProfileScreen({user,firstName,streak,weekDone,openPage}){
       </div>
       <div className="m-list">
         <button className="m-li" onClick={()=>openPage("week")}><span className="m-lic"><Icon name="calendar"/></span><span style={{flex:1}}>My week</span><Icon name="chevron" size={18}/></button>
-        <button className="m-li" onClick={()=>openPage("assessment")}><span className="m-lic"><Icon name="clipboard"/></span><span style={{flex:1}}>My assessment</span><Icon name="chevron" size={18}/></button>
+        <button className="m-li" onClick={()=>openPage("assessment")}><span className="m-lic"><Icon name="clipboard"/></span><span style={{flex:1}}>My details</span><Icon name="chevron" size={18}/></button>
         <button className="m-li" onClick={signOut}><span className="m-lic"><Icon name="logout"/></span><span style={{flex:1}}>Sign out</span></button>
       </div>
     </div>
   </div>;
 }
 
-function ClientApp({user,assessmentData,embedded=false}){
+function ClientApp({user,assessmentData,embedded=false,onAssessmentChange}){
   const email=user?.email;
   const [tab,setTab]=useState("today");
   const [page,setPage]=useState(null);
@@ -1536,7 +1853,7 @@ function ClientApp({user,assessmentData,embedded=false}){
     {tab==="profile"&&(page==="week"
       ?<WeekEditor profile={profile} weekPlan={weekPlan} setDay={setDay} status={weekStatus} onBack={()=>setPage(null)}/>
       :page==="assessment"
-      ?<AssessmentSummary data={assessmentData} onBack={()=>setPage(null)}/>
+      ?<AssessmentSummary data={assessmentData} userId={user?.id} onBack={()=>setPage(null)} onSaved={d=>onAssessmentChange&&onAssessmentChange(d)}/>
       :<ProfileScreen user={user} firstName={firstName} streak={streak} weekDone={weekDone} openPage={setPage}/>)}
     </div>
     <nav className="m-nav" aria-label="Main">
@@ -1572,7 +1889,7 @@ export default function App(){
   if(!session) return <><style>{G}</style><LoginPage/></>;
 
   if(!isManager&&!checked) return <><style>{G}</style><div className="loading-wrap"><div className="spinner"/></div></>;
-  if(!isManager&&!needsAssessment) return <><style>{G}</style><ClientApp user={session.user} assessmentData={assessmentData}/></>;
+  if(!isManager&&!needsAssessment) return <><style>{G}</style><ClientApp user={session.user} assessmentData={assessmentData} onAssessmentChange={setAssessmentData}/></>;
 
   if(!isManager&&needsAssessment) return <div className="onb"><style>{G}</style>
     <div className="onb-top"><TSLogo/><button className="btn btn-ghost btn-sm" onClick={signOut}>Sign out</button></div>
