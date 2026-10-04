@@ -3,51 +3,51 @@ import { supabase } from "./supabase";
 import { useAuth, signUp, signIn, signOut, MANAGER_EMAIL } from "./Auth";
 
 const B = {
-  green:"#3A7D44",greenLt:"#4CAF5A",greenDim:"rgba(58,125,68,0.12)",
-  dark:"#1C1C1C",darker:"#141414",card:"#242424",border:"#333333",borderLt:"#444444",
-  grey:"#888888",greyLt:"#BBBBBB",white:"#F5F5F5",text:"#EEEEEE",
-  alert:"#E05050",amber:"#D4A020",blue:"#4A90D9",
+  green:"#5EC431",greenLt:"#7BD655",greenDim:"rgba(94,196,49,0.12)",ink:"#0E1A08",
+  dark:"#121212",darker:"#121212",card:"#1C1C1C",border:"#2A2A2A",borderLt:"#3A3A3A",
+  grey:"#8E918C",greyLt:"#BDBFBB",white:"#F2F2F2",text:"#F2F2F2",
+  alert:"#E05050",amber:"#F2A93B",blue:"#4A90D9",
 };
 
 const G = `
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{background:${B.darker};color:${B.text};font-family:'Barlow',sans-serif;font-size:15px;-webkit-font-smoothing:antialiased}
+html,body{background:${B.darker};color:${B.text};font-family:'Barlow',sans-serif;font-size:15px;-webkit-font-smoothing:antialiased;font-synthesis:none}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:${B.dark}}::-webkit-scrollbar-thumb{background:${B.border};border-radius:2px}
 .app{min-height:100vh;display:flex;flex-direction:column}
 .nav{background:${B.dark};border-bottom:3px solid ${B.green};display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:64px;position:sticky;top:0;z-index:200}
-.logo{display:flex;align-items:center;gap:0.75rem}
-.logo-box{width:44px;height:44px;background:${B.green};display:flex;align-items:center;justify-content:center;border-radius:4px;position:relative;overflow:hidden}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-box{width:44px;height:44px;border-radius:8px;background:${B.green};color:${B.ink};display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:0.02em;flex-shrink:0}
 .logo-ts{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.2rem;color:white;letter-spacing:-0.02em;line-height:1}
 .logo-slash{position:absolute;right:-4px;top:0;width:12px;height:100%;background:${B.dark};transform:skewX(-8deg)}
-.logo-text{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.1rem;letter-spacing:0.1em;text-transform:uppercase;color:${B.white}}
-.logo-text span{color:${B.green}}
+.logo-text{font-weight:700;font-size:0.95rem;line-height:1.15;color:${B.white}}
+.logo-text em{font-style:normal;color:${B.green}}
 .nav-pills{display:flex;gap:0.25rem;background:${B.darker};border-radius:8px;padding:0.3rem;border:1px solid ${B.border}}
 .pill{padding:0.4rem 1.2rem;border-radius:6px;border:none;background:transparent;color:${B.grey};font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:all 0.2s}
-.pill.active{background:${B.green};color:white}.pill:hover:not(.active){color:${B.greyLt}}
-.nav-av{width:36px;height:36px;border-radius:50%;background:${B.green};border:2px solid ${B.greenLt};display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.85rem;color:white}
+.pill.active{background:${B.green};color:${B.ink}}.pill:hover:not(.active){color:${B.greyLt}}
+.nav-av{width:36px;height:36px;border-radius:50%;background:#242424;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:${B.green};flex-shrink:0}
 .main{flex:1;display:flex}
 .sidebar{width:220px;flex-shrink:0;background:${B.dark};border-right:1px solid ${B.border};padding:1.25rem 0;display:flex;flex-direction:column}
-.s-section{font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:${B.grey};padding:0.85rem 1.25rem 0.3rem}
-.slink{display:flex;align-items:center;gap:0.65rem;padding:0.6rem 1.25rem;margin:0.1rem 0.5rem;border-radius:7px;cursor:pointer;color:${B.grey};font-size:0.88rem;font-weight:500;border:1px solid transparent;background:transparent;width:calc(100% - 1rem);text-align:left;transition:all 0.15s;font-family:'Barlow',sans-serif}
-.slink:hover{background:rgba(58,125,68,0.12);color:${B.greyLt}}
-.slink.active{background:rgba(58,125,68,0.12);color:${B.green};border-color:${B.border}}
+.s-section{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:${B.grey};padding:0 14px 8px}
+.slink{display:flex;align-items:center;gap:14px;padding:12px 14px;margin:0;border-radius:10px;cursor:pointer;color:${B.grey};font-size:1rem;font-weight:600;border:none;background:transparent;width:100%;text-align:left;transition:background 0.15s,color 0.15s;font-family:'Barlow',sans-serif}
+.slink:hover{background:${B.card};color:${B.greyLt}}
+.slink.active{background:rgba(94,196,49,0.12);color:${B.green}}
 .slink-icon{width:18px;text-align:center;font-size:0.9rem}
 .content{flex:1;padding:2rem;overflow-y:auto;max-height:calc(100vh - 64px)}
-.ph{font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:700;color:${B.white};letter-spacing:0.02em;text-transform:uppercase;margin-bottom:0.2rem}
+.ph{font-family:'Bebas Neue',sans-serif;font-size:2.6rem;font-weight:400;color:${B.white};letter-spacing:0.02em;line-height:1;margin-bottom:0.35rem}
 .ph em{color:${B.green};font-style:normal}
 .psub{font-size:0.85rem;color:${B.grey};margin-bottom:1.75rem}
-.card{background:${B.card};border:1px solid ${B.border};border-radius:12px;padding:1.4rem;margin-bottom:1.1rem}
+.card{background:${B.card};border:1px solid ${B.border};border-radius:14px;padding:1.4rem;margin-bottom:1.1rem}
 .card-hd{font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:${B.green};margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem}
 .card-hd::after{content:'';flex:1;height:1px;background:${B.border}}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.1rem}
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
 .g5{display:grid;grid-template-columns:repeat(5,1fr);gap:0.75rem}
-.banner{background:linear-gradient(135deg,${B.dark} 0%,#1A2F1C 100%);border:1px solid ${B.border};border-left:4px solid ${B.green};border-radius:12px;padding:1.75rem 2rem;margin-bottom:1.1rem;position:relative;overflow:hidden}
-.banner::after{content:'TS';position:absolute;right:1.5rem;top:50%;transform:translateY(-50%);font-family:'Barlow Condensed',sans-serif;font-size:6rem;font-weight:800;color:rgba(58,125,68,0.08);letter-spacing:-0.05em;line-height:1}
+.banner{background:linear-gradient(135deg,${B.card} 0%,rgba(94,196,49,0.10) 100%);border:1px solid ${B.border};border-radius:14px;padding:1.75rem 2rem;margin-bottom:1.1rem;position:relative;overflow:hidden}
+.banner::after{content:'TS';position:absolute;right:1.5rem;top:50%;transform:translateY(-50%);font-family:'Bebas Neue',sans-serif;font-size:7rem;color:rgba(94,196,49,0.08);line-height:1}
 .banner-label{font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:${B.green};margin-bottom:0.4rem}
-.banner-title{font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:700;color:${B.white};text-transform:uppercase;margin-bottom:0.25rem;letter-spacing:0.02em}
+.banner-title{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;font-weight:400;color:${B.white};margin-bottom:0.25rem;letter-spacing:0.02em;line-height:1}
 .banner-sub{font-size:0.85rem;color:${B.grey}}
 .pl{display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:0.3rem;color:${B.greyLt}}
 .pt{height:7px;background:${B.border};border-radius:99px;margin-bottom:0.85rem;overflow:hidden}
@@ -55,18 +55,18 @@ html,body{background:${B.darker};color:${B.text};font-family:'Barlow',sans-serif
 .p-green{background:linear-gradient(90deg,${B.green},${B.greenLt})}
 .p-amber{background:${B.amber}}.p-alert{background:${B.alert}}.p-blue{background:${B.blue}}
 .badge{display:inline-flex;align-items:center;gap:0.3rem;padding:0.2rem 0.7rem;border-radius:4px;font-size:0.68rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.06em;text-transform:uppercase}
-.badge-green{background:rgba(58,125,68,0.2);color:${B.greenLt};border:1px solid rgba(58,125,68,0.4)}
+.badge-green{background:rgba(94,196,49,0.2);color:${B.greenLt};border:1px solid rgba(94,196,49,0.4)}
 .badge-amber{background:rgba(212,160,32,0.15);color:${B.amber};border:1px solid rgba(212,160,32,0.3)}
 .badge-blue{background:rgba(74,144,217,0.15);color:${B.blue};border:1px solid rgba(74,144,217,0.3)}
 .badge-red{background:rgba(224,80,80,0.15);color:${B.alert};border:1px solid rgba(224,80,80,0.3)}
 .tag{display:inline-block;padding:0.2rem 0.6rem;border-radius:4px;font-size:0.72rem;background:${B.border};color:${B.greyLt};margin:0.15rem 0.1rem}
-.btn{padding:0.6rem 1.4rem;border-radius:7px;border:none;font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;transition:all 0.2s}
-.btn-g{background:${B.green};color:white}.btn-g:hover{background:${B.greenLt}}
+.btn{padding:0.7rem 1.4rem;border-radius:10px;border:none;font-family:'Barlow',sans-serif;font-size:0.95rem;font-weight:700;cursor:pointer;transition:background 0.2s,color 0.2s,border-color 0.2s}
+.btn-g{background:${B.green};color:${B.ink}}.btn-g:hover{background:${B.greenLt}}
 .btn-o{background:${B.border};color:${B.greyLt}}.btn-o:hover{background:${B.borderLt};color:${B.white}}
-.btn-sm{padding:0.35rem 0.9rem;font-size:0.72rem}
+.btn-sm{padding:0.45rem 0.9rem;font-size:0.85rem}
 .btn-ghost{background:transparent;border:1px solid ${B.border};color:${B.grey}}.btn-ghost:hover{border-color:${B.green};color:${B.green}}
-.btn-full{width:100%;padding:0.85rem;font-size:0.9rem}
-.inp{width:100%;background:${B.darker};border:1px solid ${B.border};border-radius:7px;color:${B.text};font-family:'Barlow',sans-serif;font-size:0.88rem;padding:0.65rem 0.9rem;outline:none;transition:border-color 0.2s}
+.btn-full{width:100%;padding:0.9rem;font-size:1rem}
+.inp{width:100%;background:#242424;border:1px solid ${B.border};border-radius:10px;color:${B.text};font-family:'Barlow',sans-serif;font-size:0.95rem;padding:0.75rem 0.9rem;outline:none;transition:border-color 0.2s}
 .inp:focus{border-color:${B.green}}.inp::placeholder{color:${B.grey}}
 .inp-label{font-size:0.72rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:${B.grey};margin-bottom:0.35rem;display:block}
 .inp-group{margin-bottom:1rem}
@@ -76,37 +76,37 @@ select.inp option{background:${B.dark}}
 .div{height:1px;background:${B.border};margin:1rem 0}
 .scroll{overflow-y:auto}.mh300{max-height:300px}.mh400{max-height:400px}
 .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:${B.darker};padding:2rem}
-.auth-box{background:${B.card};border:1px solid ${B.border};border-top:4px solid ${B.green};border-radius:12px;padding:2.5rem;width:100%;max-width:440px}
-.auth-title{font-family:'Barlow Condensed',sans-serif;font-size:1.4rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:${B.white};margin-bottom:0.35rem;text-align:center}
+.auth-box{background:${B.card};border:1px solid ${B.border};border-radius:16px;padding:2.5rem;width:100%;max-width:440px}
+.auth-title{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;font-weight:400;letter-spacing:0.02em;color:${B.white};margin-bottom:0.35rem;text-align:center}
 .auth-sub{font-size:0.84rem;color:${B.grey};text-align:center;margin-bottom:1.75rem}
 .auth-switch{text-align:center;font-size:0.82rem;color:${B.grey};margin-top:1rem}
 .auth-switch span{color:${B.green};cursor:pointer;font-weight:600}
 .err{background:rgba(224,80,80,0.1);border:1px solid rgba(224,80,80,0.3);border-radius:7px;padding:0.75rem 1rem;font-size:0.82rem;color:${B.alert};margin-bottom:1rem}
-.success{background:rgba(58,125,68,0.1);border:1px solid rgba(58,125,68,0.3);border-radius:7px;padding:0.75rem 1rem;font-size:0.82rem;color:${B.greenLt};margin-bottom:1rem}
+.success{background:rgba(94,196,49,0.1);border:1px solid rgba(94,196,49,0.3);border-radius:7px;padding:0.75rem 1rem;font-size:0.82rem;color:${B.greenLt};margin-bottom:1rem}
 .loading-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:${B.darker};flex-direction:column;gap:1rem}
 .spinner{width:40px;height:40px;border:3px solid ${B.border};border-top-color:${B.green};border-radius:50%;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .assess-step{background:${B.card};border:1px solid ${B.border};border-radius:12px;padding:2rem}
-.assess-title{font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;font-weight:700;color:${B.white};text-transform:uppercase;margin-bottom:0.35rem}
+.assess-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;font-weight:400;color:${B.white};letter-spacing:0.02em;margin-bottom:0.35rem}
 .assess-sub{font-size:0.85rem;color:${B.grey};margin-bottom:1.75rem}
 .progress-steps{display:flex;gap:0.5rem;margin-bottom:2rem}
 .step-dot{flex:1;height:4px;border-radius:99px;background:${B.border};transition:background 0.3s}
 .step-dot.done{background:${B.green}}.step-dot.active{background:${B.greenLt}}
 .checkbox-group{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:1rem}
 .checkbox-item{display:flex;align-items:center;gap:0.5rem;padding:0.6rem 0.85rem;background:${B.darker};border:1px solid ${B.border};border-radius:7px;cursor:pointer;transition:all 0.15s;font-size:0.85rem}
-.checkbox-item:hover{border-color:${B.green}}.checkbox-item.checked{border-color:${B.green};background:rgba(58,125,68,0.12);color:${B.greenLt}}
+.checkbox-item:hover{border-color:${B.green}}.checkbox-item.checked{border-color:${B.green};background:rgba(94,196,49,0.12);color:${B.greenLt}}
 .radio-group{display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem}
 .radio-item{display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1rem;background:${B.darker};border:1px solid ${B.border};border-radius:7px;cursor:pointer;transition:all 0.15s;font-size:0.88rem}
-.radio-item:hover{border-color:${B.green}}.radio-item.selected{border-color:${B.green};background:rgba(58,125,68,0.12);color:${B.greenLt}}
+.radio-item:hover{border-color:${B.green}}.radio-item.selected{border-color:${B.green};background:rgba(94,196,49,0.12);color:${B.greenLt}}
 .crow{display:flex;align-items:center;gap:0.85rem;padding:0.75rem;border-radius:8px;cursor:pointer;border:1px solid transparent;transition:all 0.15s}
-.crow:hover{background:rgba(58,125,68,0.12)}.crow.sel{background:rgba(58,125,68,0.12);border-color:${B.border}}
+.crow:hover{background:rgba(94,196,49,0.12)}.crow.sel{background:rgba(94,196,49,0.12);border-color:${B.border}}
 .cav{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700;color:white;flex-shrink:0}
 .cname{font-size:0.9rem;font-weight:600;color:${B.white}}.cmeta{font-size:0.74rem;color:${B.grey}}
-.msg-wrap{display:flex;flex-direction:column;gap:0.75rem;height:320px;overflow-y:auto;padding:0.75rem;background:${B.darker};border:1px solid ${B.border};border-radius:8px;margin-bottom:0.75rem}
+.msg-wrap{display:flex;flex-direction:column;gap:0.75rem;height:360px;overflow-y:auto;padding:0.85rem;background:${B.dark};border:1px solid ${B.border};border-radius:12px;margin-bottom:0.75rem}
 .msg-row{display:flex;flex-direction:column}
 .msg-row.mine{align-items:flex-end}.msg-row.theirs{align-items:flex-start}
 .msg-bubble{max-width:75%;padding:0.65rem 1rem;border-radius:10px;font-size:0.85rem;line-height:1.5;word-break:break-word}
-.msg-bubble.mine{background:${B.green};color:white;border-bottom-right-radius:3px}
+.msg-bubble.mine{background:${B.green};color:${B.ink};border-bottom-right-radius:3px}
 .msg-bubble.theirs{background:${B.border};color:${B.text};border-bottom-left-radius:3px}
 .msg-time{font-size:0.65rem;color:${B.grey};margin-top:0.25rem;padding:0 0.25rem}
 .wcup{width:26px;height:32px;border-radius:3px 3px 6px 6px;border:2px solid ${B.borderLt};cursor:pointer;transition:all 0.2s}
@@ -119,20 +119,42 @@ select.inp option{background:${B.dark}}
 .dot-pulse span:nth-child(2){animation-delay:0.2s}.dot-pulse span:nth-child(3){animation-delay:0.4s}
 @keyframes pulse{0%,100%{opacity:0.3;transform:scale(0.8)}50%{opacity:1;transform:scale(1)}}
 .mp-table{width:100%;border-collapse:collapse;font-size:0.82rem}
-.mp-table th{background:${B.green};color:white;padding:0.6rem 0.8rem;text-align:left;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.06em;text-transform:uppercase}
+.mp-table th{background:${B.green};color:${B.ink};padding:0.6rem 0.8rem;text-align:left;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.06em;text-transform:uppercase}
 .mp-table td{padding:0.6rem 0.8rem;border-bottom:1px solid ${B.border};color:${B.greyLt};vertical-align:top}
-.mp-table tr:hover td{background:rgba(58,125,68,0.08)}
+.mp-table tr:hover td{background:rgba(94,196,49,0.08)}
 .supp-row{display:flex;align-items:center;gap:0.85rem;padding:0.7rem 0;border-bottom:1px solid ${B.border}}
 .supp-row:last-child{border:none}
 .supp-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .supp-check{width:22px;height:22px;border-radius:5px;border:2px solid ${B.border};cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;margin-left:auto;flex-shrink:0}
 .supp-check.done{background:${B.green};border-color:${B.green}}
 
+/* v8 layout */
+.app2{min-height:100vh;display:flex}
+.side2{width:240px;flex-shrink:0;position:sticky;top:0;height:100vh;background:${B.dark};border-right:1px solid ${B.border};padding:28px 16px;display:flex;flex-direction:column;gap:4px}
+.side2 .logo{padding:0 8px 28px}
+.side2-foot{margin-top:auto;display:flex;flex-direction:column;gap:12px;padding:16px 8px 0;border-top:1px solid ${B.border}}
+.side2-user{display:flex;align-items:center;gap:10px;min-width:0}
+.side2-email{font-size:0.82rem;color:${B.grey};overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.content2{flex:1;min-width:0;padding:40px 48px;max-width:1320px}
+.onb{min-height:100vh;background:${B.dark}}
+.onb-top{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid ${B.border}}
+.onb-body{max-width:760px;margin:0 auto;padding:32px 20px}
+.auth-tag{text-align:center;color:${B.grey};font-style:italic;font-size:0.9rem;margin:-1.25rem 0 2rem}
+@media (max-width:899px){
+  .app2{flex-direction:column}
+  .side2{position:static;width:auto;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:12px;border-right:none;border-bottom:1px solid ${B.border}}
+  .side2 .logo{padding:0 12px 0 4px}
+  .side2 .s-section,.side2-email{display:none}
+  .side2 .slink{width:auto}
+  .side2-foot{margin:0 0 0 auto;border:none;padding:0;flex-direction:row}
+  .content2{padding:24px 16px}
+}
+
 /* ACTIVITY DAY SELECTOR */
 .act-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.65rem}
 .act-card{background:${B.darker};border:2px solid ${B.border};border-radius:10px;padding:0.85rem;cursor:pointer;transition:all 0.2s;text-align:center}
 .act-card:hover{border-color:${B.green};transform:translateY(-1px)}
-.act-card.sel{border-color:${B.green};background:rgba(58,125,68,0.12)}
+.act-card.sel{border-color:${B.green};background:rgba(94,196,49,0.12)}
 .act-icon{font-size:1.6rem;margin-bottom:0.35rem}
 .act-name{font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:${B.white};margin-bottom:0.2rem}
 .act-mult{font-size:0.7rem;color:${B.green};font-weight:600;margin-bottom:0.15rem}
@@ -144,7 +166,7 @@ select.inp option{background:${B.dark}}
 .tcard.green-t{border-top-color:${B.green}}
 .tcard.amber-t{border-top-color:${B.amber}}
 .tcard.blue-t{border-top-color:${B.blue}}
-.tcard-num{font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:800;color:${B.white};line-height:1}
+.tcard-num{font-family:'Bebas Neue',sans-serif;font-size:2.4rem;font-weight:400;color:${B.white};line-height:1}
 .tcard-unit{font-size:0.72rem;color:${B.grey}}
 .tcard-lbl{font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:${B.grey};margin-top:0.3rem}
 
@@ -158,7 +180,7 @@ select.inp option{background:${B.dark}}
 /* BF SELECTOR */
 .bf-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:0.5rem;margin-bottom:1rem}
 .bf-card{background:${B.darker};border:2px solid ${B.border};border-radius:8px;padding:0.6rem 0.4rem;cursor:pointer;transition:all 0.2s;text-align:center}
-.bf-card:hover{border-color:${B.green}}.bf-card.sel{border-color:${B.green};background:rgba(58,125,68,0.15)}
+.bf-card:hover{border-color:${B.green}}.bf-card.sel{border-color:${B.green};background:rgba(94,196,49,0.15)}
 .bf-figure{font-size:1.8rem;line-height:1;margin-bottom:0.25rem}
 .bf-pct{font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700;color:${B.white}}
 .bf-lbl{font-size:0.6rem;color:${B.grey};margin-top:0.1rem}
@@ -172,7 +194,7 @@ select.inp option{background:${B.dark}}
 .routine-item{display:flex;align-items:flex-start;gap:0.6rem;padding:0.45rem 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.84rem;color:${B.greyLt};line-height:1.5}
 .routine-item:last-child{border:none}
 .routine-dot{width:6px;height:6px;border-radius:50%;background:${B.green};flex-shrink:0;margin-top:0.5rem}
-.routine-time-tag{font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.06em;color:${B.green};background:rgba(58,125,68,0.15);border:1px solid rgba(58,125,68,0.3);border-radius:4px;padding:0.1rem 0.45rem;margin-left:auto;flex-shrink:0}
+.routine-time-tag{font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.06em;color:${B.green};background:rgba(94,196,49,0.15);border:1px solid rgba(94,196,49,0.3);border-radius:4px;padding:0.1rem 0.45rem;margin-left:auto;flex-shrink:0}
 `;
 
 /* ─── ACTIVITY TYPES ─────────────────────────────────────────────────────── */
@@ -257,8 +279,8 @@ function calcTargets(profile, activityMult){
 /* ─── HELPERS ────────────────────────────────────────────────────────────── */
 function TSLogo(){
   return <div className="logo">
-    <div className="logo-box"><span className="logo-ts">TS</span><div className="logo-slash"/></div>
-    <div className="logo-text">Tom Saunders <span>Nutrition</span></div>
+    <span className="logo-box">TS</span>
+    <span className="logo-text">Tom Saunders<br/><em>Nutrition</em></span>
   </div>;
 }
 function Prog({label,val,max,col="p-green",unit=""}){
@@ -621,14 +643,15 @@ function LoginPage(){
   return <div className="auth-wrap">
     <div className="auth-box">
       <div style={{display:"flex",justifyContent:"center",marginBottom:"2rem"}}><TSLogo/></div>
-      <div className="auth-title">{isSignup?"Create Your Account":"Welcome Back"}</div>
+      <div className="auth-tag">Make the best decisions at the right moments</div>
+      <div className="auth-title">{isSignup?"Create your account":"Welcome back"}</div>
       <div className="auth-sub">{isSignup?"Sign up to access your personalised nutrition plan":"Sign in to your Tom Saunders Nutrition account"}</div>
       {error&&<div className="err">{error}</div>}
       {success&&<div className="success">{success}</div>}
       {isSignup&&<div className="inp-group"><label className="inp-label">Full Name</label><input className="inp" value={name} onChange={e=>setName(e.target.value)} placeholder="Your full name"/></div>}
       <div className="inp-group"><label className="inp-label">Email Address</label><input className="inp" type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="your@email.com" onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/></div>
       <div className="inp-group"><label className="inp-label">Password</label><input className="inp" type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="••••••••" onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/></div>
-      <button className="btn btn-g btn-full" onClick={handleSubmit} disabled={loading}>{loading?"Please wait…":isSignup?"Create Account →":"Sign In →"}</button>
+      <button className="btn btn-g btn-full" onClick={handleSubmit} disabled={loading}>{loading?"Please wait…":isSignup?"Create account":"Sign in"}</button>
       <div className="auth-switch">
         {isSignup?"Already have an account? ":"New client? "}
         <span onClick={()=>{setIsSignup(s=>!s);setError("");}}>{isSignup?"Sign in":"Sign up here"}</span>
@@ -940,7 +963,7 @@ function ManagerDash({managerUser}){
     id:"db_"+i,
     name:`${a.data?.firstName||""} ${a.data?.lastName||""}`.trim()||a.email,
     ini:((a.data?.firstName?.[0]||a.email?.[0]||"?").toUpperCase())+((a.data?.lastName?.[0]||"").toUpperCase()),
-    col:"#3A7D44",goal:a.data?.goal||"Assessment Complete",
+    col:"#2F6A1A",goal:a.data?.goal||"Assessment Complete",
     status:"new",assessed:true,assessmentData:a.data,email:a.email,
     weight:a.data?.weight,conditions:[a.data?.conditions||"None"],tags:a.data?.dietPrefs||[]
   }));
@@ -970,7 +993,7 @@ function ManagerDash({managerUser}){
       <div style={{background:B.card,border:`1px solid ${B.border}`,borderLeft:`3px solid ${B.alert}`,borderRadius:12,padding:"1.1rem 1.25rem"}}><div style={{fontSize:"0.68rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.grey,marginBottom:"0.4rem"}}>Need Attention</div><div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"2.1rem",fontWeight:700,color:B.alert,lineHeight:1}}>{DEMO.filter(c=>c.status==="needs-attention").length}</div></div>
     </div>
 
-    <div style={{display:"grid",gridTemplateColumns:"260px 1fr",gap:"1.1rem"}}>
+    <div style={{display:"grid",gridTemplateColumns:"minmax(300px,340px) 1fr",alignItems:"start",gap:"1.1rem"}}>
       <div className="card" style={{padding:"1rem"}}>
         {realClients.length>0&&<div style={{fontSize:"0.65rem",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:B.green,padding:"0.3rem 0.5rem 0.6rem"}}>Real Clients</div>}
         <div className="scroll mh400">
@@ -996,7 +1019,7 @@ function ManagerDash({managerUser}){
 
         <div style={{display:"flex",gap:"0.25rem",background:B.darker,borderRadius:"8px",padding:"0.3rem",border:`1px solid ${B.border}`,marginBottom:"1.25rem",flexWrap:"wrap"}}>
           {["assessment","targets","routines","meal plan","messages","progress"].map(t=>(
-            <button key={t} onClick={()=>setTab(t)} style={{padding:"0.35rem 0.9rem",borderRadius:"6px",border:"none",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:"0.7rem",fontWeight:700,letterSpacing:"0.06em",textTransform:"uppercase",background:tab===t?B.green:B.darker,color:tab===t?"white":B.grey,transition:"all 0.2s"}}>{t}</button>
+            <button key={t} onClick={()=>setTab(t)} style={{padding:"0.35rem 0.9rem",borderRadius:"6px",border:"none",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:"0.7rem",fontWeight:700,letterSpacing:"0.06em",textTransform:"uppercase",background:tab===t?B.green:B.card,color:tab===t?B.ink:B.grey,transition:"all 0.2s"}}>{t}</button>
           ))}
         </div>
 
@@ -1196,6 +1219,10 @@ const ICON_PATHS = {
   calendar:"M4 6h16v15H4zM4 10h16M8 3v4M16 3v4",
   clipboard:"M9 4h6v3H9zM7 5.5H5V21h14V5.5h-2M8.5 12h7M8.5 16h7",
   logout:"M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 16l4-4-4-4M14 12H4",
+  users:"M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21a7 7 0 0 1 14 0M16 3.5a4 4 0 0 1 0 7.5M22 21a7 7 0 0 0-4.5-6.5",
+  phone:"M7 2h10a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zM11 18h2",
+  chart:"M4 20V10M10 20V4M16 20v-7M2 20h20",
+  sliders:"M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1M15 4v4M9 10v4M17 16v4",
 };
 
 function Icon({name,size=20,sw=1.8}){
@@ -1547,67 +1574,44 @@ export default function App(){
   if(!isManager&&!checked) return <><style>{G}</style><div className="loading-wrap"><div className="spinner"/></div></>;
   if(!isManager&&!needsAssessment) return <><style>{G}</style><ClientApp user={session.user} assessmentData={assessmentData}/></>;
 
-  const initials=isManager?"TS":(session.user.email[0].toUpperCase());
-  const clientLinks=[["","Dashboard","dashboard"],["","My Targets","targets"],["","Messages","messages"],["","Progress","progress"]];
-  const managerLinks=[["","All Clients","dashboard"],["","Analytics","analytics"],["","Messages","messages"],["","Settings","settings"]];
-  const links=isManager?managerLinks:clientLinks;
+  if(!isManager&&needsAssessment) return <div className="onb"><style>{G}</style>
+    <div className="onb-top"><TSLogo/><button className="btn btn-ghost btn-sm" onClick={signOut}>Sign out</button></div>
+    <div className="onb-body"><Assessment user={session.user} onComplete={(d)=>{setAssessmentData(d);setNeedsAssessment(false);}}/></div>
+  </div>;
 
-  return <div className="app">
+  const links=[["dashboard","Clients","users"],["preview","Client preview","phone"],["analytics","Analytics","chart"],["settings","Settings","sliders"]];
+
+  return <div className="app2">
     <style>{G}</style>
-    <nav className="nav">
+    <aside className="side2">
       <TSLogo/>
-      {isManager&&<div className="nav-pills">
-        <button className={`pill ${view==="dashboard"?"active":""}`} onClick={()=>setView("dashboard")}>Manager</button>
-        <button className={`pill ${view==="preview"?"active":""}`} onClick={()=>setView("preview")}>Client Preview</button>
-      </div>}
-      <div className="fg">
-        <div className="nav-av">{initials}</div>
-        <span style={{fontSize:"0.78rem",color:B.grey,maxWidth:180,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{session.user.email}</span>
-        <button className="btn btn-ghost btn-sm" onClick={signOut}>Sign Out</button>
+      <div className="s-section">Practice</div>
+      {links.map(([v,lb,ic])=>(
+        <button key={v} className={`slink ${view===v?"active":""}`} onClick={()=>setView(v)} aria-current={view===v?"page":undefined}>
+          <Icon name={ic} size={18}/>{lb}
+        </button>
+      ))}
+      <div className="side2-foot">
+        <div className="side2-user"><div className="nav-av">TS</div><span className="side2-email">{session.user.email}</span></div>
+        <button className="btn btn-ghost btn-sm" onClick={signOut}>Sign out</button>
       </div>
-    </nav>
-    <div className="main">
-      <aside className="sidebar">
-        <div className="s-section">{isManager?"Practice":"My Plan"}</div>
-        {links.map(([ic,lb,v])=>(
-          <button key={lb} className={`slink ${view===v?"active":""}`} onClick={()=>setView(v)}>
-            <span className="slink-icon">{ic}</span>{lb}
-          </button>
-        ))}
-      </aside>
-      <main className="content">
-        {!isManager&&needsAssessment&&<Assessment user={session.user} onComplete={(d)=>{setAssessmentData(d);setNeedsAssessment(false);}}/>}
-        {!isManager&&!needsAssessment&&view==="dashboard"&&<>
-          <div className="ph">My <em>Dashboard</em></div>
-          <div className="psub">Your personalised plan from Tom Saunders Nutrition</div>
-          <ClientDash user={session.user} assessmentData={assessmentData}/>
-        </>}
-        {!isManager&&!needsAssessment&&view==="targets"&&<>
-          <div className="ph">My <em>Targets</em></div>
-          <div className="psub">Your weekly calorie, protein and hydration targets</div>
-          {assessmentData?.weight ? <WeeklyTargets profile={{weight:parseFloat(assessmentData.weight),height:parseFloat(assessmentData.height),age:parseFloat(assessmentData.age),sex:assessmentData.sex||"male",bodyFatPct:parseFloat(assessmentData.bodyFatPct)||20,goal:assessmentData.goal}} clientEmail={session.user.email}/> : <div className="card"><div style={{textAlign:"center",padding:"2rem",color:B.grey}}>Complete your assessment to see your targets.</div></div>}
-        </>}
-        {!isManager&&!needsAssessment&&view==="messages"&&<>
-          <div className="ph">My <em>Messages</em></div>
-          <div className="psub">Direct messages with Tom Saunders</div>
-          <div className="card"><div className="card-hd"> Messages from Tom</div><Messaging myEmail={session.user.email} otherEmail={MANAGER_EMAIL} myId={session.user.id}/></div>
-        </>}
-        {isManager&&view==="dashboard"&&<>
-          <div className="ph"><em>TS Nutrition</em> — Client Management</div>
-          <div className="psub">View assessments, set targets, assign routines and message clients</div>
-          <ManagerDash managerUser={session.user}/>
-        </>}
-        {isManager&&view==="preview"&&<>
-          <div className="ph">Client <em>Preview</em></div>
-          <div className="psub">This is the client app layout. Ticking is switched off in preview.</div>
-          <div style={{maxWidth:420}}><ClientApp user={session.user} assessmentData={null} embedded/></div>
-        </>}
-        {!["dashboard","preview","messages","targets"].includes(view)&&!needsAssessment&&<div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"60vh",flexDirection:"column",gap:"1rem",color:B.grey}}>
-          <div style={{fontSize:"3rem"}}></div>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"1.2rem",fontWeight:700,color:B.greyLt,textTransform:"uppercase"}}>Coming Soon</div>
-          <div style={{fontSize:"0.85rem"}}>This section is being built step by step.</div>
-        </div>}
-      </main>
-    </div>
+    </aside>
+    <main className="content2">
+      {view==="dashboard"&&<>
+        <div className="ph">Clients</div>
+        <div className="psub">View assessments, set targets, assign routines and message clients</div>
+        <ManagerDash managerUser={session.user}/>
+      </>}
+      {view==="preview"&&<>
+        <div className="ph">Client preview</div>
+        <div className="psub">This is what clients see on their phone. Ticking is switched off in preview.</div>
+        <div style={{maxWidth:420}}><ClientApp user={session.user} assessmentData={null} embedded/></div>
+      </>}
+      {(view==="analytics"||view==="settings")&&<div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"60vh",flexDirection:"column",gap:"0.75rem",color:B.grey,textAlign:"center"}}>
+        <div style={{color:B.green}}><Icon name={view==="analytics"?"chart":"sliders"} size={44} sw={1.4}/></div>
+        <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"1.8rem",color:B.white,letterSpacing:"0.02em"}}>Coming soon</div>
+        <div style={{fontSize:"0.9rem"}}>This section is being built step by step.</div>
+      </div>}
+    </main>
   </div>;
 }
