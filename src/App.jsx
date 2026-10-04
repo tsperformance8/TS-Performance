@@ -1062,7 +1062,7 @@ function ManagerDash({managerUser}){
         {currentSel.status==="invited"&&<InviteNote client={currentSel}/>}
 
         <div style={{display:"flex",gap:"0.25rem",background:B.darker,borderRadius:"8px",padding:"0.3rem",border:`1px solid ${B.border}`,marginBottom:"1.25rem",flexWrap:"wrap"}}>
-          {["assessment","targets","routines","meal plan","messages","progress"].map(t=>(
+          {["assessment","structure","diary","targets","routines","messages","meal plan","progress"].map(t=>(
             <button key={t} onClick={()=>setTab(t)} style={{padding:"0.35rem 0.9rem",borderRadius:"6px",border:"none",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:"0.7rem",fontWeight:700,letterSpacing:"0.06em",textTransform:"uppercase",background:tab===t?B.green:B.card,color:tab===t?B.ink:B.grey,transition:"all 0.2s"}}>{t}</button>
           ))}
         </div>
@@ -1097,6 +1097,8 @@ function ManagerDash({managerUser}){
         {tab==="targets"&&!profile&&<div style={{color:B.grey,fontSize:"0.85rem",padding:"1rem"}}>No assessment data available for this client.</div>}
 
         {tab==="routines"&&<Routines clientEmail={currentSel.email} isManager={true}/>}
+        {tab==="structure"&&<StructureEditor email={currentSel.email}/>}
+        {tab==="diary"&&<DiaryBrowser email={currentSel.email} profile={profile}/>}
         {tab==="meal plan"&&<AIMealGen client={currentSel}/>}
 
         {tab==="messages"&&<div>
@@ -1242,7 +1244,9 @@ function DeleteClientModal({client,onClose,onDeleted}){
     const emails=[...new Set([client.email,client.assess?.email,client.row?.email].filter(Boolean))];
     const failed=[];
     for(const e of emails){
-      for(const [table,col] of [["daily_logs","client_email"],["week_plans","client_email"],["routines","client_email"],["messages","sender_email"],["messages","receiver_email"],["assessments","email"],["clients","email"]]){
+      const {data:files}=await supabase.storage.from("meal-photos").list(e.toLowerCase(),{limit:1000});
+      if(files?.length){ const {error}=await supabase.storage.from("meal-photos").remove(files.map(x=>`${e.toLowerCase()}/${x.name}`)); if(error) failed.push("meal photos"); }
+      for(const [table,col] of [["food_logs","client_email"],["eating_structures","client_email"],["daily_logs","client_email"],["week_plans","client_email"],["routines","client_email"],["messages","sender_email"],["messages","receiver_email"],["assessments","email"],["clients","email"]]){
         const {error}=await supabase.from(table).delete().eq(col,e);
         if(error) failed.push(table);
       }
@@ -1260,7 +1264,7 @@ function DeleteClientModal({client,onClose,onDeleted}){
 
   return <Modal title={`Delete ${client.name}?`} onClose={onClose}>
     {err&&<div className="err" role="alert">{err}</div>}
-    <p style={{color:B.greyLt,lineHeight:1.5,marginBottom:"0.75rem"}}>This permanently removes their assessment, weekly plan, routines, daily ticks and all messages between you. It can't be undone.</p>
+    <p style={{color:B.greyLt,lineHeight:1.5,marginBottom:"0.75rem"}}>This permanently removes their assessment, eating structure, food diary and photos, weekly plan, routines, daily ticks and all messages between you. It can't be undone.</p>
     <div className="inp-group"><label className="inp-label" htmlFor="del-confirm">Type DELETE to confirm</label><input id="del-confirm" className="inp" value={confirm} onChange={e=>setConfirm(e.target.value)} autoFocus/></div>
     <div className="fg" style={{justifyContent:"flex-end"}}>
       <button className="btn btn-ghost btn-sm" onClick={onClose}>Cancel</button>
@@ -1320,15 +1324,18 @@ function EditClientModal({client,onClose,onSaved}){
   async function save(){
     const problem=checkDetails(f); if(problem) return setErr(problem);
     setSaving(true); setErr("");
-    let error=null;
+    let failed="";
     if(client.assess){
-      ({error}=await supabase.from("assessments").update({data:mergeDetails(client.assess.data,f)}).eq("email",client.assess.email));
+      const {data,error}=await supabase.from("assessments").update({data:mergeDetails(client.assess.data,f)}).eq("email",client.assess.email).select();
+      if(error) failed="connection"; else if(!data?.length) failed="permission";
     }
-    if(!error&&client.row){
-      ({error}=await supabase.from("clients").update({first_name:f.first.trim(),last_name:f.last.trim()||null,data:client.assess?client.row.data:mergeDetails(client.row.data,f)}).eq("email",client.row.email));
+    if(!failed&&client.row){
+      const {data,error}=await supabase.from("clients").update({first_name:f.first.trim(),last_name:f.last.trim()||null,data:client.assess?client.row.data:mergeDetails(client.row.data,f)}).eq("email",client.row.email).select();
+      if(error) failed="connection"; else if(!data?.length) failed="permission";
     }
     setSaving(false);
-    if(error) return setErr("Couldn't save the changes. Check your connection and try again.");
+    if(failed==="permission") return setErr("Not saved: the database blocked this change. The edit permission (Step 1 SQL) may be missing.");
+    if(failed) return setErr("Couldn't save the changes. Check your connection and try again.");
     onSaved(client.email);
   }
 
@@ -1511,6 +1518,8 @@ const ICON_PATHS = {
   trash:"M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3",
   copy:"M9 9h11v11H9zM5 15H4V4h11v1",
   edit:"M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4",
+  camera:"M4 8h3l2-3h6l2 3h3v12H4zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",
+  utensils:"M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M16 3c-2 1.5-2 6 0 8v10M16 3v18",
   close:"M6 6l12 12M18 6 6 18",
 };
 
@@ -1544,14 +1553,469 @@ function weekDates(ref=new Date()){
 function linesOf(t){ return t ? t.split("\n").map(l=>l.trim()).filter(Boolean) : []; }
 function intensity(mult){ return Math.max(0,Math.min(1,((mult||1.2)-1.2)/0.7)); }
 
-function TodayScreen({firstName,profile,weekPlan,routine,email,canWrite,onStreak,goChat}){
-  const dates=weekDates();
+/* ─── EATING STRUCTURE + FOOD DIARY ──────────────────────────────────────── */
+const OCC_TYPES=[["meal","Meal"],["snack","Snack"],["pre_meal","Pre-exercise meal"],["pre_snack","Pre-exercise snack"],["during","During exercise"],["post_snack","Post-exercise snack"],["post_meal","Post-exercise meal"]];
+const OCC_LABEL=Object.fromEntries(OCC_TYPES);
+const PHASES={1:"Phase 1 · Set meals",2:"Phase 2 · Choice",3:"Phase 3 · Training-based flex"};
+
+function newOccId(){ return "o"+Math.random().toString(36).slice(2,9); }
+function occ(time,type,name=""){ return {id:newOccId(),time,type,name,mode:"open",meals:[]}; }
+function occTitle(o){ return o.name?.trim()||OCC_LABEL[o.type]||"Eating occasion"; }
+function sortOcc(list){ return [...list].sort((a,b)=>(a.time||"").localeCompare(b.time||"")); }
+function emptyWeek(){ return Object.fromEntries(DAYS.map(d=>[d,[]])); }
+
+const STRUCTURE_TEMPLATES=[
+  {id:"sed_b",group:"No exercise",name:"3 meals, 2 snacks (snack mid-morning)",build:()=>[occ("07:30","meal","Breakfast"),occ("10:30","snack"),occ("13:00","meal","Lunch"),occ("15:30","snack"),occ("18:30","meal","Dinner")]},
+  {id:"sed_a",group:"No exercise",name:"3 meals, 2 snacks (snack after lunch)",build:()=>[occ("07:30","meal","Breakfast"),occ("12:30","meal","Lunch"),occ("15:30","snack"),occ("18:30","meal","Dinner"),occ("20:30","snack")]},
+  {id:"sed_4",group:"No exercise",name:"4 meals",build:()=>[occ("07:30","meal","Breakfast"),occ("11:30","meal","Lunch 1"),occ("15:00","meal","Lunch 2"),occ("18:30","meal","Dinner")]},
+  {id:"am",group:"Training day",name:"Morning session",build:()=>[occ("07:30","pre_meal"),occ("09:30","pre_snack"),occ("11:00","during"),occ("13:00","post_snack"),occ("13:30","post_meal"),occ("17:30","meal","Dinner")]},
+  {id:"pm",group:"Training day",name:"Afternoon session",build:()=>[occ("07:30","meal","Breakfast"),occ("10:30","snack"),occ("12:00","pre_meal"),occ("14:00","pre_snack"),occ("15:00","during"),occ("16:30","post_snack"),occ("18:00","post_meal")]},
+  {id:"eve",group:"Training day",name:"Evening session",build:()=>[occ("07:30","meal","Breakfast"),occ("10:30","snack"),occ("13:00","meal","Lunch"),occ("15:00","snack"),occ("16:30","pre_meal"),occ("18:00","pre_snack"),occ("19:00","during"),occ("20:30","post_snack")]},
+  {id:"x2",group:"Training day",name:"Two sessions",build:()=>[occ("07:00","pre_meal"),occ("08:30","pre_snack"),occ("09:30","during"),occ("11:00","post_snack"),occ("13:00","pre_meal"),occ("15:30","pre_snack"),occ("16:30","during"),occ("18:00","post_snack"),occ("19:00","post_meal")]},
+  {id:"md1",group:"Match week",name:"MD-1 with training",build:()=>[occ("07:30","pre_meal"),occ("09:30","pre_snack"),occ("11:00","during"),occ("13:00","post_snack"),occ("13:30","post_meal"),occ("17:30","meal","Dinner"),occ("19:00","snack")]},
+  {id:"md1r",group:"Match week",name:"MD-1 no training",build:()=>[occ("07:30","meal","Breakfast"),occ("10:30","snack"),occ("13:00","meal","Lunch"),occ("15:30","snack"),occ("18:30","meal","Dinner"),occ("20:30","snack")]},
+  {id:"md15",group:"Match week",name:"Match day, 15:00 kick-off",build:()=>[occ("09:00","meal","Breakfast"),occ("10:30","snack"),occ("12:30","pre_meal"),occ("14:30","pre_snack"),occ("15:45","during"),occ("16:45","post_snack"),occ("17:30","post_meal"),occ("19:00","snack")]},
+  {id:"mdp1",group:"Match week",name:"MD+1 recovery",build:()=>[occ("09:30","meal","Breakfast"),occ("11:00","snack"),occ("13:00","meal","Lunch"),occ("15:00","snack"),occ("18:00","meal","Dinner"),occ("19:30","snack")]},
+];
+
+// Pick the structure version in force on a given date
+function structureFor(versions,iso){
+  let best=null;
+  for(const v of versions){ if(v.effective_from<=iso&&(!best||v.effective_from>best.effective_from)) best=v; }
+  return best;
+}
+function occasionsFor(versions,date){
+  const v=structureFor(versions,localISO(date)); if(!v) return {occasions:[],phase:null};
+  const day=DAYS[(date.getDay()+6)%7];
+  return {occasions:sortOcc(v.week?.[day]||[]),phase:v.phase};
+}
+
+const SBCSS=`
+.sb{color:${M.text};font-family:'Barlow',sans-serif}
+.sb-days{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.sb-day{background:${M.card};border:1px solid ${M.line};color:${M.muted};border-radius:10px;padding:8px 12px;font:inherit;font-weight:700;font-size:0.9rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;min-width:52px}
+.sb-day small{font-weight:500;font-size:0.72rem}
+.sb-day.on{background:rgba(94,196,49,0.14);border-color:${M.green};color:${M.green}}
+.sb-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.sb-sel,.sb-in{background:#242424;border:1px solid ${M.line};color:${M.text};border-radius:10px;height:42px;padding:0 10px;font:inherit;font-size:0.92rem;outline:none;min-width:0}
+.sb-sel:focus,.sb-in:focus{border-color:${M.green}}
+.sb-row{display:grid;grid-template-columns:112px minmax(0,1.2fr) minmax(0,1fr) auto auto;gap:8px;align-items:center;background:${M.card};border:1px solid ${M.line};border-radius:12px;padding:8px;margin-bottom:6px}
+.sb-row.client{grid-template-columns:112px minmax(0,1.2fr) minmax(0,1fr) auto}
+.sb-mode{display:flex;background:#242424;border-radius:9px;padding:3px;gap:2px}
+.sb-mode button{border:none;background:none;color:${M.muted};font:inherit;font-size:0.78rem;font-weight:700;padding:7px 9px;border-radius:7px;cursor:pointer;white-space:nowrap}
+.sb-mode button.on{background:${M.green};color:${M.greenInk}}
+.sb-x{background:none;border:none;color:${M.faint};cursor:pointer;padding:8px;border-radius:8px;display:flex}
+.sb-x:hover{color:#F08080;background:#242424}
+.sb-btn{display:inline-flex;align-items:center;gap:6px;background:#242424;border:1px solid ${M.line};color:${M.text};border-radius:10px;height:42px;padding:0 14px;font:inherit;font-weight:700;font-size:0.9rem;cursor:pointer}
+.sb-btn.primary{background:${M.green};border-color:${M.green};color:${M.greenInk}}
+.sb-btn:disabled{opacity:0.5;cursor:default}
+.sb-copy{background:${M.card};border:1px solid ${M.line};border-radius:12px;padding:12px;margin-top:10px}
+.sb-chk{display:inline-flex;align-items:center;gap:6px;margin:4px 12px 4px 0;font-size:0.9rem;cursor:pointer}
+.sb-empty{color:${M.muted};text-align:center;padding:22px;border:1px dashed ${M.line};border-radius:12px;margin-bottom:10px;font-size:0.92rem}
+.sb-label{font-size:0.8rem;font-weight:600;color:${M.muted}}
+.sb-msg{font-size:0.88rem;min-height:1.2em;margin-top:8px}
+@media (max-width:640px){
+  .sb-row,.sb-row.client{grid-template-columns:112px minmax(0,1fr) auto;grid-template-areas:"t ty x" "n n n" "m m m"}
+  .sb-row.client{grid-template-areas:"t ty x" "n n n"}
+  .sb-row>.sb-t{grid-area:t}.sb-row>.sb-ty{grid-area:ty}.sb-row>.sb-n{grid-area:n}.sb-row>.sb-m{grid-area:m}.sb-row>.sb-x{grid-area:x}
+}
+/* diary */
+.dy-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.dy-empty{text-align:center;color:${M.muted};padding:24px 12px;border:1px dashed ${M.line};border-radius:12px;font-size:0.92rem}
+.dy-mgr .dy-tot,.dy-mgr .dy-card{background:#242424}
+.dy-mgr .dy-chip.open,.dy-mgr .dy-photo{background:#2E2E2E}
+.dy-tot{background:${M.card};border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.dy-totrow{display:flex;justify-content:space-between;font-size:0.85rem;color:${M.muted};margin-top:8px}
+.dy-totrow b{color:${M.text}}
+.dy-bar{height:6px;background:#242424;border-radius:3px;overflow:hidden;margin-top:4px}
+.dy-bar div{height:100%;background:${M.green}}
+.dy-card{background:${M.card};border-radius:14px;padding:14px;margin-bottom:8px}
+.dy-head{display:flex;align-items:center;gap:10px}
+.dy-time{font-family:'Bebas Neue',sans-serif;font-size:1.25rem;letter-spacing:0.02em;color:${M.muted};min-width:48px}
+.dy-title{font-weight:700;font-size:1rem}
+.dy-type{font-size:0.75rem;color:${M.muted}}
+.dy-chip{margin-left:auto;font-size:0.72rem;font-weight:700;padding:4px 8px;border-radius:6px;white-space:nowrap}
+.dy-chip.alloc{background:rgba(94,196,49,0.14);color:${M.green}}
+.dy-chip.open{background:#242424;color:${M.muted}}
+.dy-chip.done{background:${M.green};color:${M.greenInk}}
+.dy-body{margin-top:10px;font-size:0.92rem;color:${M.muted};line-height:1.45}
+.dy-acts{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.dy-act{display:inline-flex;align-items:center;gap:6px;background:#242424;border:1px solid ${M.line};color:${M.text};border-radius:10px;padding:9px 12px;font:inherit;font-size:0.88rem;font-weight:600;cursor:pointer}
+.dy-act.primary{background:${M.green};border-color:${M.green};color:${M.greenInk}}
+.dy-log{display:flex;gap:12px;margin-top:10px;align-items:flex-start}
+.dy-photo{width:72px;height:72px;border-radius:10px;object-fit:cover;background:#242424;flex-shrink:0}
+.dy-macros{font-size:0.82rem;color:${M.muted};margin-top:4px}
+.dy-sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:600;display:flex;align-items:flex-end;justify-content:center}
+.dy-sheet{background:${M.bg};border-top:1px solid ${M.line};border-radius:20px 20px 0 0;width:min(520px,100%);max-height:92dvh;overflow:auto;padding:20px 20px calc(20px + env(safe-area-inset-bottom))}
+@media (min-width:900px){.dy-sheet-bg{align-items:center}.dy-sheet{border-radius:20px;border:1px solid ${M.line}}}
+.dy-g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.dy-prev{width:100%;max-height:220px;object-fit:cover;border-radius:12px;margin-bottom:12px}
+.dy-wknav{display:flex;align-items:center;gap:6px}
+.dy-wkbtn{width:36px;height:36px;border-radius:50%;border:1px solid ${M.line};background:${M.card};color:${M.text};display:flex;align-items:center;justify-content:center;cursor:pointer}
+.dy-today{background:none;border:none;color:${M.green};font:inherit;font-weight:700;font-size:0.85rem;cursor:pointer;padding:6px}
+`;
+
+/* Structure builder: used by the manager (with modes + phase) and by the client (times/types/names only) */
+function StructureBuilder({week,setWeek,isManager}){
+  const [day,setDay]=useState("Mon");
+  const [tpl,setTpl]=useState("");
+  const [copyTo,setCopyTo]=useState([]);
+  const [copied,setCopied]=useState("");
+  const list=sortOcc(week[day]||[]);
+
+  function update(id,patch){ setWeek(w=>({...w,[day]:(w[day]||[]).map(o=>o.id===id?{...o,...patch}:o)})); }
+  function remove(id){ setWeek(w=>({...w,[day]:(w[day]||[]).filter(o=>o.id!==id)})); }
+  function add(){ const last=list[list.length-1]; setWeek(w=>({...w,[day]:[...(w[day]||[]),occ(last?.time?bump(last.time):"08:00","meal")]})); }
+  function bump(t){ const [h,m]=t.split(":").map(Number); const x=Math.min(23,h+2); return `${String(x).padStart(2,"0")}:${String(m||0).padStart(2,"0")}`; }
+  function applyTemplate(){
+    const t=STRUCTURE_TEMPLATES.find(x=>x.id===tpl); if(!t) return;
+    if((week[day]||[]).length&&!window.confirm(`Replace ${day}'s eating occasions with "${t.name}"?`)) return;
+    setWeek(w=>({...w,[day]:t.build()})); setTpl("");
+  }
+  function doCopy(){
+    if(!copyTo.length) return;
+    setWeek(w=>{ const n={...w}; copyTo.forEach(d=>{ n[d]=(w[day]||[]).map(o=>({...o,id:newOccId(),meals:[...(o.meals||[])]})); }); return n; });
+    setCopied(`Copied ${day} to ${copyTo.join(", ")}.`); setCopyTo([]); setTimeout(()=>setCopied(""),2500);
+  }
+
+  return <div className="sb">
+    <style>{SBCSS}</style>
+    <div className="sb-days" role="tablist" aria-label="Day of the week">
+      {DAYS.map(d=><button key={d} role="tab" aria-selected={d===day} className={`sb-day ${d===day?"on":""}`} onClick={()=>setDay(d)}>
+        {d}<small>{(week[d]||[]).length} {(week[d]||[]).length===1?"time":"times"}</small>
+      </button>)}
+    </div>
+
+    <div className="sb-bar">
+      <select className="sb-sel" value={tpl} onChange={e=>setTpl(e.target.value)} aria-label="Start from a template" style={{flex:"1 1 220px"}}>
+        <option value="">Start {day} from a template…</option>
+        {["No exercise","Training day","Match week"].map(g=><optgroup key={g} label={g}>
+          {STRUCTURE_TEMPLATES.filter(t=>t.group===g).map(t=><option key={t.id} value={t.id}>{t.name}</option>)}
+        </optgroup>)}
+      </select>
+      <button className="sb-btn" onClick={applyTemplate} disabled={!tpl}>Use template</button>
+    </div>
+
+    {list.length===0&&<div className="sb-empty">No eating occasions on {day} yet. Pick a template above or add them one by one.</div>}
+    {list.map(o=><div key={o.id} className={`sb-row ${isManager?"":"client"}`}>
+      <input className="sb-in sb-t" type="time" value={o.time} onChange={e=>update(o.id,{time:e.target.value})} aria-label="Time"/>
+      <select className="sb-sel sb-ty" value={o.type} onChange={e=>update(o.id,{type:e.target.value})} aria-label="Type">
+        {OCC_TYPES.map(([v,l])=><option key={v} value={v}>{l}</option>)}
+      </select>
+      <input className="sb-in sb-n" value={o.name} placeholder={OCC_LABEL[o.type]} onChange={e=>update(o.id,{name:e.target.value})} aria-label="Name (optional)"/>
+      {isManager&&<div className="sb-mode sb-m" role="group" aria-label="Who decides this meal">
+        <button className={o.mode==="allocated"?"on":""} onClick={()=>update(o.id,{mode:"allocated"})}>Allocated</button>
+        <button className={o.mode!=="allocated"?"on":""} onClick={()=>update(o.id,{mode:"open"})}>Open</button>
+      </div>}
+      <button className="sb-x" onClick={()=>remove(o.id)} aria-label={`Remove ${occTitle(o)}`}><Icon name="trash" size={18}/></button>
+    </div>)}
+
+    <div className="sb-bar" style={{marginTop:10}}>
+      <button className="sb-btn" onClick={add}><Icon name="plus" size={16} sw={2.2}/>Add eating occasion</button>
+    </div>
+
+    {list.length>0&&<div className="sb-copy">
+      <div className="sb-label" style={{marginBottom:6}}>Copy {day} to other days</div>
+      {DAYS.filter(d=>d!==day).map(d=><label key={d} className="sb-chk">
+        <input type="checkbox" checked={copyTo.includes(d)} onChange={e=>setCopyTo(c=>e.target.checked?[...c,d]:c.filter(x=>x!==d))}/>{d}
+      </label>)}
+      <div style={{display:"flex",gap:8,marginTop:8,alignItems:"center",flexWrap:"wrap"}}>
+        <button className="sb-btn" onClick={()=>setCopyTo(DAYS.filter(d=>d!==day))}>Select all</button>
+        <button className="sb-btn primary" onClick={doCopy} disabled={!copyTo.length}>Copy</button>
+        <span className="sb-label" role="status">{copied}</span>
+      </div>
+    </div>}
+  </div>;
+}
+
+/* Manager: edit a client's structure + phase, effective from a date */
+function StructureEditor({email}){
+  const todayISO=localISO(new Date());
+  const [versions,setVersions]=useState(null);
+  const [week,setWeek]=useState(emptyWeek());
+  const [phase,setPhase]=useState(1);
+  const [from,setFrom]=useState(todayISO);
+  const [msg,setMsg]=useState({t:"",ok:true});
+  const [saving,setSaving]=useState(false);
+
+  useEffect(()=>{ load(); },[email]);
+  async function load(){
+    setVersions(null); setMsg({t:"",ok:true});
+    const {data}=await supabase.from("eating_structures").select("*").eq("client_email",email).order("effective_from",{ascending:false});
+    const v=data||[]; setVersions(v);
+    const cur=structureFor(v,todayISO)||v[v.length-1]||null;
+    setWeek(cur?{...emptyWeek(),...cur.week}:emptyWeek()); setPhase(cur?.phase||1); setFrom(todayISO);
+  }
+  async function save(){
+    if(!from) return setMsg({t:"Choose the date these changes start from.",ok:false});
+    setSaving(true);
+    const {data,error}=await supabase.from("eating_structures").upsert({client_email:email,effective_from:from,phase:Number(phase),week,updated_at:new Date().toISOString()}).select();
+    setSaving(false);
+    if(error||!data?.length) return setMsg({t:"Not saved. Check the eating_structures permissions have been set up, then try again.",ok:false});
+    setMsg({t:`Saved. This structure applies from ${new Date(from+"T12:00").toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})}.`,ok:true});
+    const {data:v}=await supabase.from("eating_structures").select("*").eq("client_email",email).order("effective_from",{ascending:false}); setVersions(v||[]);
+  }
+  if(versions===null) return <div style={{color:B.grey,padding:"1rem"}}>Loading…</div>;
+
+  return <div>
+    <div className="g3" style={{gap:"0.75rem",marginBottom:"0.5rem"}}>
+      <div className="inp-group"><label className="inp-label" htmlFor="se-phase">Phase</label>
+        <select id="se-phase" className="inp" value={phase} onChange={e=>setPhase(e.target.value)}>{[1,2,3].map(p=><option key={p} value={p}>{PHASES[p]}</option>)}</select></div>
+      <div className="inp-group"><label className="inp-label" htmlFor="se-from">Changes apply from</label>
+        <input id="se-from" className="inp" type="date" value={from} onChange={e=>setFrom(e.target.value)}/></div>
+      <div className="inp-group" style={{display:"flex",alignItems:"flex-end"}}>
+        <button className="btn btn-g" style={{width:"100%",height:44}} onClick={save} disabled={saving}>{saving?"Saving…":"Save structure"}</button></div>
+    </div>
+    <div style={{color:B.grey,fontSize:"0.85rem",marginBottom:"1rem"}}>
+      <strong style={{color:B.greyLt}}>Allocated</strong> = you set the meal. <strong style={{color:B.greyLt}}>Open</strong> = the client logs it with a photo or by tracking. Days before the start date keep their previous structure.
+    </div>
+    {msg.t&&<div className={msg.ok?"success":"err"} role="status">{msg.t}</div>}
+    <StructureBuilder week={week} setWeek={setWeek} isManager/>
+    {versions.length>0&&<div style={{marginTop:"1.25rem",fontSize:"0.85rem",color:B.grey}}>
+      <div className="inp-label">Structure history</div>
+      {versions.map(v=><div key={v.effective_from}>From {new Date(v.effective_from+"T12:00").toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})} · {PHASES[v.phase]||"Phase "+v.phase}</div>)}
+    </div>}
+  </div>;
+}
+
+/* Client onboarding step / edit screen for their eating week */
+function ClientStructureSetup({email,versions,onSaved,onBack,firstRun}){
+  const todayISO=localISO(new Date());
+  const cur=structureFor(versions||[],todayISO)||(versions||[])[0]||null;
+  const [week,setWeek]=useState(cur?{...emptyWeek(),...cur.week}:emptyWeek());
+  const [err,setErr]=useState(""); const [saving,setSaving]=useState(false);
+  const total=DAYS.reduce((n,d)=>n+(week[d]||[]).length,0);
+
+  async function save(){
+    if(!total) return setErr("Add at least one eating occasion. Templates are the quickest way to start.");
+    setSaving(true); setErr("");
+    const {data,error}=await supabase.from("eating_structures").upsert({client_email:email,effective_from:todayISO,phase:cur?.phase||1,week,updated_at:new Date().toISOString()}).select();
+    setSaving(false);
+    if(error||!data?.length) return setErr("Your eating week didn't save. Please try again, or message your coach if it keeps happening.");
+    onSaved();
+  }
+
+  return <div className="m-sec">
+    {!firstRun&&<button className="m-back" onClick={onBack}><Icon name="back" size={18}/>Profile</button>}
+    <div className="m-title" style={{margin:firstRun?"4px 0 8px":"14px 0 8px"}}>{firstRun?"Set up your eating week":"My eating week"}</div>
+    <div style={{color:M.muted,fontSize:"0.94rem",lineHeight:1.5,marginBottom:16}}>
+      {firstRun?"For each day, add the times you'll eat and what each one is: a meal, a snack, or food around training. Start from a template and adjust the times to fit your routine.":"Changes apply from today. Your past days stay as they were."}
+    </div>
+    {err&&<div className="m-err" role="alert">{err}</div>}
+    <StructureBuilder week={week} setWeek={setWeek} isManager={false}/>
+    <div className="m-row" style={{gap:10,marginTop:16}}>
+      {!firstRun&&<button className="m-btn ghost" onClick={onBack}>Cancel</button>}
+      <button className="m-btn" onClick={save} disabled={saving}>{saving?"Saving…":firstRun?"Save and continue":"Save changes"}</button>
+    </div>
+  </div>;
+}
+
+/* ─── Food diary for one day ─── */
+async function compressImage(file){
+  try{
+    const img=await createImageBitmap(file);
+    const scale=Math.min(1,1280/Math.max(img.width,img.height));
+    const c=document.createElement("canvas"); c.width=Math.round(img.width*scale); c.height=Math.round(img.height*scale);
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+    return await new Promise(r=>c.toBlob(b=>r(b||file),"image/jpeg",0.82));
+  }catch{ return file; }
+}
+const num=v=>{ const n=parseFloat(v); return isNaN(n)?0:n; };
+
+function LogSheet({occasion,existing,email,dateISO,onClose,onSaved,startWithPhoto}){
+  const [f,setF]=useState({description:existing?.description||"",kcal:existing?.kcal??"",protein:existing?.protein??"",carbs:existing?.carbs??"",fat:existing?.fat??""});
+  const [file,setFile]=useState(null);
+  const [preview,setPreview]=useState("");
+  const [err,setErr]=useState(""); const [saving,setSaving]=useState(false);
+  const fileRef=useRef(null);
+  const set=k=>e=>setF(p=>({...p,[k]:e.target.value}));
+
+  useEffect(()=>{ if(startWithPhoto) setTimeout(()=>fileRef.current?.click(),50); },[]);
+  useEffect(()=>{ const k=e=>{ if(e.key==="Escape") onClose(); }; window.addEventListener("keydown",k); return ()=>window.removeEventListener("keydown",k); },[onClose]);
+  function pick(e){ const fl=e.target.files?.[0]; if(!fl) return; setFile(fl); setPreview(URL.createObjectURL(fl)); }
+
+  async function save(status="logged"){
+    if(status==="logged"&&!file&&!existing?.photo_path&&!f.description.trim()&&!num(f.kcal))
+      return setErr("Add a photo, or describe what you ate.");
+    setSaving(true); setErr("");
+    let photo_path=existing?.photo_path||null;
+    if(file&&status==="logged"){
+      photo_path=`${email.toLowerCase()}/${dateISO}_${occasion.id}.jpg`;
+      const blob=await compressImage(file);
+      const {error:upErr}=await supabase.storage.from("meal-photos").upload(photo_path,blob,{upsert:true,contentType:"image/jpeg"});
+      if(upErr){ setSaving(false); return setErr("The photo didn't upload. Check your connection and try again."); }
+    }
+    const row=status==="skipped"
+      ?{client_email:email,log_date:dateISO,occasion_id:occasion.id,status:"skipped",description:null,kcal:null,protein:null,carbs:null,fat:null,photo_path:existing?.photo_path||null,updated_at:new Date().toISOString()}
+      :{client_email:email,log_date:dateISO,occasion_id:occasion.id,status,description:f.description.trim()||null,
+        kcal:f.kcal===""?null:num(f.kcal),protein:f.protein===""?null:num(f.protein),carbs:f.carbs===""?null:num(f.carbs),fat:f.fat===""?null:num(f.fat),
+        photo_path,updated_at:new Date().toISOString()};
+    const {data,error}=await supabase.from("food_logs").upsert(row).select();
+    setSaving(false);
+    if(error||!data?.length) return setErr("That didn't save. Check your connection and try again.");
+    onSaved();
+  }
+  async function clear(){
+    setSaving(true);
+    await supabase.from("food_logs").delete().eq("client_email",email).eq("log_date",dateISO).eq("occasion_id",occasion.id);
+    if(existing?.photo_path) await supabase.storage.from("meal-photos").remove([existing.photo_path]);
+    setSaving(false); onSaved();
+  }
+
+  return <div className="dy-sheet-bg" onMouseDown={e=>{ if(e.target===e.currentTarget) onClose(); }}>
+    <div className="dy-sheet" role="dialog" aria-modal="true" aria-label={`Log ${occTitle(occasion)}`}>
+      <div className="m-row" style={{marginBottom:14}}>
+        <div><div className="m-title" style={{fontSize:"1.7rem"}}>{occTitle(occasion)}</div><div style={{color:M.muted,fontSize:"0.88rem"}}>{occasion.time} · {OCC_LABEL[occasion.type]}</div></div>
+        <button className="dy-wkbtn" onClick={onClose} aria-label="Close"><Icon name="close" size={18}/></button>
+      </div>
+      {err&&<div className="m-err" role="alert">{err}</div>}
+      {preview&&<img className="dy-prev" src={preview} alt="Your meal"/>}
+      <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={pick} style={{display:"none"}}/>
+      <button className="dy-act" style={{width:"100%",justifyContent:"center",marginBottom:14}} onClick={()=>fileRef.current?.click()}>
+        <Icon name="camera" size={18}/>{preview||existing?.photo_path?"Change photo":"Add a photo"}
+      </button>
+      <div className="m-fgroup"><label className="m-flabel" htmlFor="lg-desc">What did you eat?</label>
+        <input id="lg-desc" className="m-field" value={f.description} onChange={set("description")} placeholder="e.g. Chicken wrap and an apple"/></div>
+      <div className="m-flabel" style={{marginBottom:6}}>Track it fully (optional)</div>
+      <div className="dy-g4">
+        {[["kcal","kcal"],["protein","Protein g"],["carbs","Carbs g"],["fat","Fat g"]].map(([k,l])=><div className="m-fgroup" key={k}>
+          <label className="m-flabel" htmlFor={"lg-"+k} style={{fontSize:"0.72rem"}}>{l}</label>
+          <input id={"lg-"+k} className="m-field" type="number" inputMode="decimal" value={f[k]} onChange={set(k)}/></div>)}
+      </div>
+      <div className="m-row" style={{gap:10,marginTop:6}}>
+        <button className="m-btn ghost" onClick={()=>save("skipped")} disabled={saving}>I skipped this</button>
+        <button className="m-btn" onClick={()=>save("logged")} disabled={saving}>{saving?"Saving…":"Save"}</button>
+      </div>
+      {existing&&<button className="m-link" style={{display:"block",margin:"14px auto 0",color:M.muted}} onClick={clear} disabled={saving}>Remove this log</button>}
+    </div>
+  </div>;
+}
+
+function MealDay({email,dateISO,occasions,phase,targets,canLog,readOnly}){
+  const [logs,setLogs]=useState({});
+  const [urls,setUrls]=useState({});
+  const [sheet,setSheet]=useState(null);
+  const todayISO=localISO(new Date());
+  const future=dateISO>todayISO;
+
+  useEffect(()=>{ load(); },[email,dateISO]);
+  async function load(){
+    setLogs({});
+    if(!email) return;
+    const {data}=await supabase.from("food_logs").select("*").eq("client_email",email).eq("log_date",dateISO);
+    const m={}; (data||[]).forEach(r=>{ m[r.occasion_id]=r; }); setLogs(m);
+    const paths=(data||[]).map(r=>r.photo_path).filter(Boolean);
+    if(paths.length){
+      const {data:signed}=await supabase.storage.from("meal-photos").createSignedUrls(paths,3600);
+      const u={}; (signed||[]).forEach(s=>{ if(s.signedUrl) u[s.path]=s.signedUrl; }); setUrls(u);
+    }
+  }
+
+  const ids=new Set(occasions.map(o=>o.id));
+  const counted=Object.values(logs).filter(l=>ids.has(l.occasion_id)&&l.status!=="skipped");
+  const tot={kcal:0,protein:0,carbs:0,fat:0}; counted.forEach(l=>{ tot.kcal+=num(l.kcal); tot.protein+=num(l.protein); tot.carbs+=num(l.carbs); tot.fat+=num(l.fat); });
+  const photoOnly=counted.filter(l=>!num(l.kcal)).length;
+  const loggedCount=Object.values(logs).filter(l=>ids.has(l.occasion_id)).length;
+
+  if(!occasions.length) return <div className="dy-empty">
+    {readOnly?"No eating structure set for this day yet. Add one in the Structure tab.":"No eating times set for this day yet."}
+  </div>;
+
+  return <div>
+    <style>{SBCSS}</style>
+    <div className="dy-tot">
+      <div className="dy-row"><span style={{fontWeight:700}}>{loggedCount} of {occasions.length} logged</span>{phase&&<span style={{fontSize:"0.78rem",color:M.muted}}>{PHASES[phase]}</span>}</div>
+      {targets&&<>
+        <div className="dy-totrow"><span>Calories</span><span><b>{Math.round(tot.kcal).toLocaleString()}</b> / {targets.calories.toLocaleString()} kcal</span></div>
+        <div className="dy-bar"><div style={{width:`${Math.min(100,tot.kcal/targets.calories*100)}%`}}/></div>
+        <div className="dy-totrow"><span>Protein</span><span><b>{Math.round(tot.protein)}</b> / {targets.protein}g</span></div>
+        <div className="dy-bar"><div style={{width:`${Math.min(100,tot.protein/targets.protein*100)}%`}}/></div>
+      </>}
+      {photoOnly>0&&<div style={{fontSize:"0.78rem",color:M.faint,marginTop:8}}>{photoOnly} photo-only {photoOnly===1?"log isn't":"logs aren't"} included in these totals.</div>}
+    </div>
+
+    {occasions.map(o=>{
+      const l=logs[o.id]; const alloc=o.mode==="allocated";
+      return <div className="dy-card" key={o.id}>
+        <div className="dy-head">
+          <div className="dy-time">{o.time}</div>
+          <div style={{minWidth:0}}><div className="dy-title">{occTitle(o)}</div>{o.name&&<div className="dy-type">{OCC_LABEL[o.type]}</div>}</div>
+          <span className={`dy-chip ${l?"done":alloc?"alloc":"open"}`}>{l?(l.status==="skipped"?"Skipped":"Logged"):alloc?"From your coach":"Your choice"}</span>
+        </div>
+        {alloc&&!l&&<div className="dy-body">{readOnly?"Allocated. Meals from your library can be assigned once the meal library is built.":`${COACH.name.split(" ")[0]} is setting this meal. Until it appears, log what you eat here.`}</div>}
+        {l&&l.status!=="skipped"&&<div className="dy-log">
+          {l.photo_path&&(urls[l.photo_path]?<img className="dy-photo" src={urls[l.photo_path]} alt={l.description||"Meal photo"}/>:<div className="dy-photo"/>)}
+          <div style={{minWidth:0}}>
+            <div style={{fontSize:"0.95rem"}}>{l.description||(l.photo_path?"Photo logged":"Logged")}</div>
+            {(l.kcal!=null||l.protein!=null)&&<div className="dy-macros">{[l.kcal!=null&&`${Math.round(l.kcal)} kcal`,l.protein!=null&&`P ${Math.round(l.protein)}g`,l.carbs!=null&&`C ${Math.round(l.carbs)}g`,l.fat!=null&&`F ${Math.round(l.fat)}g`].filter(Boolean).join(" · ")}</div>}
+          </div>
+        </div>}
+        {!readOnly&&canLog&&!future&&<div className="dy-acts">
+          {l?<button className="dy-act" onClick={()=>setSheet({o,photo:false})}><Icon name="edit" size={16}/>Edit</button>
+            :<>
+              <button className="dy-act primary" onClick={()=>setSheet({o,photo:true})}><Icon name="camera" size={16}/>Add photo</button>
+              <button className="dy-act" onClick={()=>setSheet({o,photo:false})}><Icon name="edit" size={16}/>Track it</button>
+            </>}
+        </div>}
+      </div>;
+    })}
+    {future&&!readOnly&&<div style={{fontSize:"0.82rem",color:M.faint,textAlign:"center",marginTop:6}}>You can log meals on the day.</div>}
+    {sheet&&<LogSheet occasion={sheet.o} existing={logs[sheet.o.id]} email={email} dateISO={dateISO} startWithPhoto={sheet.photo}
+      onClose={()=>setSheet(null)} onSaved={()=>{ setSheet(null); load(); }}/>}
+  </div>;
+}
+
+/* Manager: browse a client's diary week by week */
+function DiaryBrowser({email,profile,weekPlan}){
+  const [offset,setOffset]=useState(0);
+  const [versions,setVersions]=useState([]);
   const todayISO=localISO(new Date());
   const [selISO,setSelISO]=useState(todayISO);
+  const [plan,setPlan]=useState(weekPlan||DEFAULT_WEEK);
+  useEffect(()=>{ (async()=>{
+    const [s,w]=await Promise.all([
+      supabase.from("eating_structures").select("*").eq("client_email",email),
+      supabase.from("week_plans").select("plan").eq("client_email",email).maybeSingle(),
+    ]);
+    setVersions(s.data||[]); setPlan(w.data?.plan?{...DEFAULT_WEEK,...w.data.plan}:DEFAULT_WEEK);
+  })(); },[email]);
+  const ref=new Date(); ref.setDate(ref.getDate()+offset*7);
+  const dates=weekDates(ref);
+  const sel=dates.find(d=>localISO(d)===selISO)||dates[0];
+  const {occasions,phase}=occasionsFor(versions,sel);
+  const act=ACTIVITIES.find(a=>a.id===(plan[DAYS[(sel.getDay()+6)%7]]||"rest"))||ACTIVITIES[0];
+  const targets=profile?.weight?calcTargets(profile,act.mult||1.2):null;
+  function move(n){ const r=new Date(); r.setDate(r.getDate()+(offset+n)*7); setOffset(offset+n); setSelISO(localISO(weekDates(r)[0])); }
+
+  return <div className="dy-mgr">
+    <style>{SBCSS}</style>
+    <div className="fb" style={{marginBottom:"0.75rem"}}>
+      <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"1.4rem",letterSpacing:"0.02em"}}>Week of {dates[0].toLocaleDateString("en-GB",{day:"numeric",month:"short"})}</div>
+      <div className="dy-wknav">
+        {offset!==0&&<button className="dy-today" onClick={()=>{setOffset(0);setSelISO(todayISO);}}>This week</button>}
+        <button className="dy-wkbtn" onClick={()=>move(-1)} aria-label="Previous week"><Icon name="back" size={18}/></button>
+        <button className="dy-wkbtn" onClick={()=>move(1)} aria-label="Next week"><Icon name="chevron" size={18}/></button>
+      </div>
+    </div>
+    <div className="sb-days">
+      {dates.map((d,i)=>{ const iso=localISO(d); return <button key={iso} className={`sb-day ${iso===localISO(sel)?"on":""}`} onClick={()=>setSelISO(iso)}>{DAYS[i]}<small>{d.getDate()}</small></button>; })}
+    </div>
+    <div style={{color:B.grey,fontSize:"0.85rem",marginBottom:"0.75rem"}}>{sel.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"})} · {act.name}</div>
+    <MealDay email={email} dateISO={localISO(sel)} occasions={occasions} phase={phase} targets={targets} readOnly/>
+  </div>;
+}
+
+function TodayScreen({firstName,profile,weekPlan,routine,email,canWrite,onStreak,goChat,versions}){
+  const [offset,setOffset]=useState(0);
+  const refDate=new Date(); refDate.setDate(refDate.getDate()+offset*7);
+  const dates=weekDates(refDate);
+  const todayISO=localISO(new Date());
+  const [selISO,setSelISO]=useState(todayISO);
+  function moveWeek(n){ const r=new Date(); r.setDate(r.getDate()+(offset+n)*7); setOffset(offset+n); const wk=weekDates(r); setSelISO(offset+n===0?todayISO:localISO(wk[0])); }
   const [done,setDone]=useState([]);
   const [note,setNote]=useState("");
 
-  const selIdx=dates.findIndex(d=>localISO(d)===selISO);
+  const selIdx=Math.max(0,dates.findIndex(d=>localISO(d)===selISO));
   const selDay=DAYS[selIdx<0?0:selIdx];
   const act=ACTIVITIES.find(a=>a.id===(weekPlan[selDay]||"rest"))||ACTIVITIES[0];
   const t=profile?.weight ? calcTargets(profile, act.mult||1.2) : null;
@@ -1588,10 +2052,16 @@ function TodayScreen({firstName,profile,weekPlan,routine,email,canWrite,onStreak
   }
 
   const selDate=dates[selIdx<0?0:selIdx];
+  const {occasions:occs,phase}=occasionsFor(versions||[],selDate);
   return <div className="m-today">
     <div className="m-sec m-colA">
       <div className="m-row">
         <div className="m-date">{selISO===todayISO?"Today":selDate.toLocaleDateString("en-GB",{weekday:"long"})}, {selDate.toLocaleDateString("en-GB",{day:"numeric",month:"short"})}</div>
+        <div className="dy-wknav">
+          {offset!==0&&<button className="dy-today" onClick={()=>{setOffset(0);setSelISO(todayISO);}}>Today</button>}
+          <button className="dy-wkbtn" onClick={()=>moveWeek(-1)} aria-label="Previous week"><Icon name="back" size={18}/></button>
+          <button className="dy-wkbtn" onClick={()=>moveWeek(1)} aria-label="Next week"><Icon name="chevron" size={18}/></button>
+        </div>
       </div>
       <div className="m-week" role="tablist" aria-label="This week">
         {dates.map((d,i)=>{
@@ -1623,6 +2093,8 @@ function TodayScreen({firstName,profile,weekPlan,routine,email,canWrite,onStreak
     </div>
 
     <div className="m-sec m-colB">
+      <div className="m-h2">Your meals</div>
+      <MealDay email={email} dateISO={selISO} occasions={occs} phase={phase} targets={t} canLog={canWrite}/>
       <div className="m-h2">Your daily Rx</div>
       {!hasRoutine && !t ? null : allKeys.length>0 && <div style={{marginBottom:16}}>
         <div className="m-row" style={{fontSize:"0.85rem",color:M.muted}}><span>{doneCount} of {allKeys.length} done</span>{isFuture&&<span>Ticks open on the day</span>}</div>
@@ -1738,9 +2210,9 @@ function AssessmentSummary({data,userId,onBack,onSaved}){
     const problem=checkDetails(f); if(problem) return setErr(problem);
     setSaving(true); setErr("");
     const next=mergeDetails(data,f);
-    const {error}=await supabase.from("assessments").update({data:next}).eq("user_id",userId);
+    const {data:rows,error}=await supabase.from("assessments").update({data:next}).eq("user_id",userId).select();
     setSaving(false);
-    if(error) return setErr("Your changes didn't save. Check your connection and try again.");
+    if(error||!rows?.length) return setErr("Your changes didn't save. Please try again, or message your coach if it keeps happening.");
     onSaved(next); setEditing(false); setNote("Saved. Your targets have been updated."); setTimeout(()=>setNote(""),2500);
   }
 
@@ -1786,7 +2258,8 @@ function ProfileScreen({user,firstName,streak,weekDone,openPage}){
         <div className="m-tile"><b><span style={{color:M.green,display:"flex"}}><Icon name="check" size={26} sw={2.4}/></span>{weekDone}/7</b><span>Days complete this week</span></div>
       </div>
       <div className="m-list">
-        <button className="m-li" onClick={()=>openPage("week")}><span className="m-lic"><Icon name="calendar"/></span><span style={{flex:1}}>My week</span><Icon name="chevron" size={18}/></button>
+        <button className="m-li" onClick={()=>openPage("structure")}><span className="m-lic"><Icon name="utensils"/></span><span style={{flex:1}}>My eating week</span><Icon name="chevron" size={18}/></button>
+        <button className="m-li" onClick={()=>openPage("week")}><span className="m-lic"><Icon name="calendar"/></span><span style={{flex:1}}>My training week</span><Icon name="chevron" size={18}/></button>
         <button className="m-li" onClick={()=>openPage("assessment")}><span className="m-lic"><Icon name="clipboard"/></span><span style={{flex:1}}>My details</span><Icon name="chevron" size={18}/></button>
         <button className="m-li" onClick={signOut}><span className="m-lic"><Icon name="logout"/></span><span style={{flex:1}}>Sign out</span></button>
       </div>
@@ -1803,16 +2276,19 @@ function ClientApp({user,assessmentData,embedded=false,onAssessmentChange}){
   const [streak,setStreak]=useState(0);
   const [weekDone,setWeekDone]=useState(0);
   const [weekStatus,setWeekStatus]=useState("");
+  const [versions,setVersions]=useState(null);
   const firstName=assessmentData?.firstName||email?.split("@")[0]||"";
   const profile=assessmentData?{weight:parseFloat(assessmentData.weight)||0,height:parseFloat(assessmentData.height)||0,age:parseFloat(assessmentData.age)||0,sex:assessmentData.sex||"male",bodyFatPct:parseFloat(assessmentData.bodyFatPct)||20,goal:assessmentData.goal||""}:null;
 
   useEffect(()=>{ if(!email) return; loadAll(); },[email]);
 
   async function loadAll(){
-    const [w,r]=await Promise.all([
+    const [w,r,st]=await Promise.all([
       supabase.from("week_plans").select("plan").eq("client_email",email).maybeSingle(),
       supabase.from("routines").select("*").eq("client_email",email).maybeSingle(),
+      supabase.from("eating_structures").select("*").eq("client_email",email),
     ]);
+    setVersions(st.data||[]);
     setWeekPlan(w.data?.plan?{...DEFAULT_WEEK,...w.data.plan}:DEFAULT_WEEK);
     setRoutine(r.data||null);
     loadStreak();
@@ -1837,6 +2313,12 @@ function ClientApp({user,assessmentData,embedded=false,onAssessmentChange}){
   }
 
   function go(t){ setTab(t); setPage(null); }
+  async function reloadStructures(){ const {data}=await supabase.from("eating_structures").select("*").eq("client_email",email); setVersions(data||[]); }
+
+  if(!embedded&&versions&&versions.length===0) return <div className="m-app" style={{paddingBottom:24}}>
+    <style>{MCSS}</style><style>{SBCSS}</style>
+    <ClientStructureSetup email={email} versions={[]} firstRun onSaved={reloadStructures}/>
+  </div>;
 
   return <div className={`m-app ${embedded?"embedded":""}`}>
     <style>{MCSS}</style>
@@ -1847,10 +2329,11 @@ function ClientApp({user,assessmentData,embedded=false,onAssessmentChange}){
         <div><div className="m-hi">Hi {firstName},</div><div className="m-tag">{COACH.tagline}</div></div>
         {streak>0&&<div className="m-streak" style={{marginLeft:"auto"}}><Icon name="flame" size={16}/>{streak}</div>}
       </div>
-      <TodayScreen firstName={firstName} profile={profile} weekPlan={weekPlan} routine={routine} email={email} canWrite={!embedded} onStreak={loadStreak} goChat={()=>go("chat")}/>
+      <TodayScreen firstName={firstName} profile={profile} weekPlan={weekPlan} routine={routine} email={email} canWrite={!embedded} onStreak={loadStreak} goChat={()=>go("chat")} versions={versions}/>
     </>}
     {tab==="chat"&&<ChatScreen me={email} myId={user?.id} otherEmail={MANAGER_EMAIL}/>}
-    {tab==="profile"&&(page==="week"
+    {tab==="profile"&&page==="structure"&&<ClientStructureSetup email={email} versions={versions} onBack={()=>setPage(null)} onSaved={()=>{reloadStructures();setPage(null);}}/>}
+    {tab==="profile"&&page!=="structure"&&(page==="week"
       ?<WeekEditor profile={profile} weekPlan={weekPlan} setDay={setDay} status={weekStatus} onBack={()=>setPage(null)}/>
       :page==="assessment"
       ?<AssessmentSummary data={assessmentData} userId={user?.id} onBack={()=>setPage(null)} onSaved={d=>onAssessmentChange&&onAssessmentChange(d)}/>
